@@ -1,0 +1,20 @@
+{
+    "name": "restaurant-platform",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev:gateway": "pnpm --filter api-gateway start:dev",
+        "dev:identity": "pnpm --filter identity-service start:dev",
+        "dev:store": "pnpm --filter store-service start:dev",
+        "dev:catalog": "pnpm --filter catalog-service start:dev",
+        "dev:promotion": "pnpm --filter promotion-service start:dev",
+        "dev:order": "pnpm --filter order-service start:dev",
+        "dev:customer": "pnpm --filter customer-service start:dev",
+        "dev:notification": "pnpm --filter notification-service start:dev",
+        "dev": "concurrently \"pnpm dev:gateway\" \"pnpm dev:identity\" \"pnpm dev:store\" \"pnpm dev:catalog\" \"pnpm dev:promotion\" \"pnpm dev:order\" \"pnpm dev:customer\" \"pnpm dev:notification\""
+    },
+    "devDependencies": {
+        "typescript": "^5.0.0",
+        "concurrently": "^8.0.0"
+    }
+}
