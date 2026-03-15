@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { Button, Card, ConfigProvider, Divider, Select, Space, TimePicker, Typography } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import Text from 'antd/es/typography/Text';
 
 dayjs.extend(customParseFormat);
 
@@ -179,8 +180,8 @@ export default function WorkingHoursManager() {
                         );
 
                         return (
-                            <Card key={branch.branchId} bodyStyle={{padding: '0px'}}>
-                                <div className="flex flex-wrap items-center bg-gray-100 justify-between gap-3 p-6 mb-4">
+                            <Card key={branch.branchId} bodyStyle={{ padding: '0px' }}>
+                                <div className="flex flex-wrap items-center bg-[#F6F9FC] justify-between gap-3 p-6 mb-4">
                                     <Typography.Title level={4} className="mb-0!">
                                         {branch.branchName}
                                     </Typography.Title>
@@ -201,8 +202,33 @@ export default function WorkingHoursManager() {
                                             style={{ minWidth: 180 }}
                                             className='h-10!'
                                         />
-                                        <Button className='h-10!' onClick={() => addDay(branch.branchId)} disabled={availableDays.length === 0}>
-                                            {t('addDay')}
+                                        <Button
+                                            className='h-10! border-0! overflow-hidden p-0!'
+                                            type="primary"
+                                            style={{ backgroundColor: '#13B272' }}
+                                            onClick={() => addDay(branch.branchId)}
+                                            disabled={availableDays.length === 0}
+                                        >
+                                            <div className="flex items-center h-full">
+                                                <div className="h-full flex items-center justify-center px-4" style={{ backgroundColor: '#119F65' }}>
+                                                    <PlusOutlined />
+                                                </div>
+                                                <Text className="px-3 text-white!">{t('addDay')}</Text>
+                                            </div>
+                                        </Button>
+                                        <Button
+                                            className='h-10! border-0! overflow-hidden p-0!'
+                                            type="primary"
+                                            style={{ backgroundColor: '#13B272' }}
+                                            onClick={() => addDay(branch.branchId)}
+                                            disabled={availableDays.length === 0}
+                                        >
+                                            <div className="flex items-center h-full">
+                                                <div className="h-full flex items-center justify-center px-4" style={{ backgroundColor: '#119F65' }}>
+                                                    <SaveOutlined />
+                                                </div>
+                                                <Text className="px-3 text-white!">{t('save')}</Text>
+                                            </div>
                                         </Button>
                                     </Space>
                                 </div>
@@ -213,10 +239,10 @@ export default function WorkingHoursManager() {
                                             <div className="flex items-center justify-between">
                                                 <Typography.Text strong>{dayLabel(day)}</Typography.Text>
                                                 <Space>
-                                                    <Button className='h-10!' size="small" onClick={() => addSlot(branch.branchId, day)}>
+                                                    <Button className='h-10! border-0! overflow-hidden p-0! px-3!' type="primary" size="small" onClick={() => addSlot(branch.branchId, day)}>
                                                         {t('addTime')}
                                                     </Button>
-                                                    <Button className='h-10!' size="small" danger onClick={() => deleteDay(branch.branchId, day)}>
+                                                    <Button className='h-10!' size="small" type="primary" danger onClick={() => deleteDay(branch.branchId, day)}>
                                                         {t('deleteDay')}
                                                     </Button>
                                                 </Space>

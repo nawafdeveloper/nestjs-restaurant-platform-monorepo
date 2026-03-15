@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Button, Card, ConfigProvider, Form, Input, Modal, Space, Table, Tag, Typography, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useLocale, useTranslations } from 'next-intl';
+import Text from 'antd/es/typography/Text';
+import { PlusOutlined } from '@ant-design/icons';
 
 type VariantRow = {
     key: string;
@@ -180,12 +182,21 @@ export default function VariantsTable() {
                         </Typography.Title>
                         <Typography.Text>{t('subtitle')}</Typography.Text>
                     </div>
-                    <Button type="primary" onClick={openAdd}>{t('addVariant')}</Button>
+                    <Button
+                        className='h-10! border-0! overflow-hidden p-0!'
+                        type="primary"
+                        style={{ backgroundColor: '#13B272' }}
+                        onClick={openAdd}
+                    >
+                        <div className="flex items-center h-full">
+                            <div className="h-full flex items-center justify-center px-4" style={{ backgroundColor: '#119F65' }}>
+                                <PlusOutlined />
+                            </div>
+                            <Text className="px-3 text-white!">{t('addVariant')}</Text>
+                        </div>
+                    </Button>
                 </div>
-                <Card>
-                    <Table columns={columns} dataSource={rows} pagination={false} />
-                </Card>
-
+                <Table columns={columns} dataSource={rows} pagination={false} />
                 <Modal
                     title={t('deleteTitle')}
                     open={isDeleteOpen}
@@ -193,12 +204,17 @@ export default function VariantsTable() {
                     onOk={handleDelete}
                     okText={t('deleteOk')}
                     cancelText={t('deleteCancel')}
+                    okButtonProps={{
+                        className: 'bg-[#ff4d4f]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Typography.Text>
                         {selectedVariant ? t('deleteConfirmWithName', { name: selectedVariant.name }) : t('deleteConfirm')}
                     </Typography.Text>
                 </Modal>
-
                 <Modal
                     title={t('editVariant')}
                     open={isEditOpen}
@@ -206,10 +222,16 @@ export default function VariantsTable() {
                     onOk={handleSave}
                     okText={t('save')}
                     cancelText={t('cancel')}
+                    okButtonProps={{
+                        className: 'bg-[#119F65]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Form layout="vertical" form={form}>
                         <Form.Item label={t('product')} name="product">
-                            <Select options={productOptions} className='h-10!'/>
+                            <Select options={productOptions} className='h-10!' />
                         </Form.Item>
                         <Form.Item label={t('name')} name="name">
                             <Input className="h-10" />
@@ -240,7 +262,6 @@ export default function VariantsTable() {
                         </Form.Item>
                     </Form>
                 </Modal>
-
                 <Modal
                     title={t('addVariant')}
                     open={isAddOpen}
@@ -248,10 +269,16 @@ export default function VariantsTable() {
                     onOk={handleAdd}
                     okText={t('save')}
                     cancelText={t('cancel')}
+                    okButtonProps={{
+                        className: 'bg-[#119F65]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Form layout="vertical" form={addForm}>
                         <Form.Item label={t('product')} name="product" rules={[{ required: true }]}>
-                            <Select options={productOptions} className='h-10!'/>
+                            <Select options={productOptions} className='h-10!' />
                         </Form.Item>
                         <Form.Item label={t('name')} name="name" rules={[{ required: true }]}>
                             <Input className="h-10" />

@@ -3,6 +3,8 @@
 import React from 'react';
 import { Button, Card, ConfigProvider, Form, Input, Switch, Tabs, Tag, Typography } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
+import Text from 'antd/es/typography/Text';
+import { SaveOutlined } from '@ant-design/icons';
 
 type SessionItem = {
     id: string;
@@ -29,84 +31,72 @@ export default function AccountSecurityTabs() {
             key: '1',
             label: t('tabs.profile'),
             children: (
-                <Card>
-                    <Form
-                        layout="vertical"
-                        initialValues={{
-                            name: 'Nawaf Store',
-                            email: 'owner@store.com',
-                            phone: '512345678',
-                            isActive: true
-                        }}
-                    >
-                        <Form.Item label={t('name')} name="name">
-                            <Input className="h-10" />
-                        </Form.Item>
-                        <Form.Item label={t('email')} name="email">
-                            <Input className="h-10" />
-                        </Form.Item>
-                        <Form.Item label={t('phone')} name="phone">
-                            <Input className="h-10" prefix="+966" />
-                        </Form.Item>
-                        <Form.Item label={t('status')} name="isActive" valuePropName="checked">
-                            <Switch checkedChildren={t('active')} unCheckedChildren={t('inactive')} />
-                        </Form.Item>
-                        <div className="flex justify-end gap-3">
-                            <Button>{t('cancel')}</Button>
-                            <Button type="primary">{t('save')}</Button>
-                        </div>
-                    </Form>
-                </Card>
+                <Form
+                    layout="vertical"
+                    initialValues={{
+                        name: 'Nawaf Store',
+                        email: 'owner@store.com',
+                        phone: '512345678',
+                        isActive: true
+                    }}
+                >
+                    <Form.Item label={t('name')} name="name">
+                        <Input className="h-10" />
+                    </Form.Item>
+                    <Form.Item label={t('email')} name="email">
+                        <Input className="h-10" />
+                    </Form.Item>
+                    <Form.Item label={t('phone')} name="phone">
+                        <Input className="h-10" prefix="+966" />
+                    </Form.Item>
+                    <div className="flex justify-end gap-3">
+                        <Button className='h-10! bg-[#D9E5F1]! border-0!'>{t('cancel')}</Button>
+                        <Button
+                            className='h-10! border-0! overflow-hidden p-0!'
+                            type="primary"
+                            style={{ backgroundColor: '#13B272' }}
+                        >
+                            <div className="flex items-center h-full">
+                                <div className="h-full flex items-center justify-center px-4" style={{ backgroundColor: '#119F65' }}>
+                                    <SaveOutlined />
+                                </div>
+                                <Text className="px-3 text-white!">{t('save')}</Text>
+                            </div>
+                        </Button>
+                    </div>
+                </Form>
             )
         },
         {
             key: '2',
             label: t('tabs.security'),
             children: (
-                <Card>
-                    <Form layout="vertical">
-                        <Form.Item label={t('currentPassword')} name="currentPassword">
-                            <Input.Password className="h-10" />
-                        </Form.Item>
-                        <Form.Item label={t('newPassword')} name="newPassword">
-                            <Input.Password className="h-10" />
-                        </Form.Item>
-                        <Form.Item label={t('confirmPassword')} name="confirmPassword">
-                            <Input.Password className="h-10" />
-                        </Form.Item>
-                        <div className="flex justify-end gap-3">
-                            <Button>{t('cancel')}</Button>
-                            <Button type="primary">{t('updatePassword')}</Button>
-                        </div>
-                    </Form>
-                </Card>
-            )
-        },
-        {
-            key: '3',
-            label: t('tabs.sessions'),
-            children: (
-                <Card>
-                    <div className="space-y-3">
-                        {sessions.map((session, index) => (
-                            <div
-                                key={session.id}
-                                className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-3 last:border-b-0 last:pb-0"
-                            >
-                                <div>
-                                    <Typography.Text className="font-medium">{session.device}</Typography.Text>
-                                    <div className="text-xs text-gray-500">{session.ip}</div>
+                <Form layout="vertical">
+                    <Form.Item label={t('currentPassword')} name="currentPassword">
+                        <Input.Password className="h-10" />
+                    </Form.Item>
+                    <Form.Item label={t('newPassword')} name="newPassword">
+                        <Input.Password className="h-10" />
+                    </Form.Item>
+                    <Form.Item label={t('confirmPassword')} name="confirmPassword">
+                        <Input.Password className="h-10" />
+                    </Form.Item>
+                    <div className="flex justify-end gap-3">
+                        <Button className='h-10! bg-[#D9E5F1]! border-0!'>{t('cancel')}</Button>
+                        <Button
+                            className='h-10! border-0! overflow-hidden p-0!'
+                            type="primary"
+                            style={{ backgroundColor: '#13B272' }}
+                        >
+                            <div className="flex items-center h-full">
+                                <div className="h-full flex items-center justify-center px-4" style={{ backgroundColor: '#119F65' }}>
+                                    <SaveOutlined />
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <Tag color={session.isActive ? 'green' : 'default'}>
-                                        {session.isActive ? t('active') : t('inactive')}
-                                    </Tag>
-                                    <div className="text-xs text-gray-500">{session.createdAt}</div>
-                                </div>
+                                <Text className="px-3 text-white!">{t('save')}</Text>
                             </div>
-                        ))}
+                        </Button>
                     </div>
-                </Card>
+                </Form>
             )
         }
     ];
@@ -120,7 +110,9 @@ export default function AccountSecurityTabs() {
                     </Typography.Title>
                     <Typography.Text>{t('subtitle')}</Typography.Text>
                 </div>
-                <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
+                <Card className='border! border-gray-300'>
+                    <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
+                </Card>
             </div>
         </ConfigProvider>
     );

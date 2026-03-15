@@ -196,10 +196,7 @@ export default function OrdersTable() {
                         <Typography.Text>{t('subtitle')}</Typography.Text>
                     </div>
                 </div>
-                <Card>
-                    <Table columns={columns} dataSource={rows} pagination={false} />
-                </Card>
-
+                <Table columns={columns} dataSource={rows} pagination={false} />
                 <Modal
                     title={t('orderDetails')}
                     open={isViewOpen}
@@ -207,8 +204,24 @@ export default function OrdersTable() {
                     onOk={handleSave}
                     okText={t('save')}
                     cancelText={t('cancel')}
+                    okButtonProps={{
+                        className: 'bg-[#119F65]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <div className="space-y-3">
+                        <div className="pt-2">
+                            <Typography.Text type="secondary">{t('items')}</Typography.Text>
+                            <Table
+                                columns={itemColumns}
+                                dataSource={selectedOrder?.items || []}
+                                pagination={false}
+                                size="small"
+                                className="mt-2"
+                            />
+                        </div>
                         <div>
                             <Typography.Text type="secondary">{t('customerAddress')}</Typography.Text>
                             <div className="text-sm">{selectedOrder?.customerAddress || '-'}</div>
@@ -231,20 +244,7 @@ export default function OrdersTable() {
                                     className='h-10!'
                                 />
                             </Form.Item>
-                            <Form.Item label={t('notes')} name="notes">
-                                <Input.TextArea rows={3} />
-                            </Form.Item>
                         </Form>
-                        <div className="pt-2">
-                            <Typography.Text type="secondary">{t('items')}</Typography.Text>
-                            <Table
-                                columns={itemColumns}
-                                dataSource={selectedOrder?.items || []}
-                                pagination={false}
-                                size="small"
-                                className="mt-2"
-                            />
-                        </div>
                     </div>
                 </Modal>
             </div>

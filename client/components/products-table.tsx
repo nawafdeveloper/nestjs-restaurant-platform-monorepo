@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { Button, Card, ConfigProvider, Form, Input, Modal, Select, Space, Table, Tag, Typography, Upload } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { UploadOutlined } from '@ant-design/icons';
+import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { useLocale, useTranslations } from 'next-intl';
+import Text from 'antd/es/typography/Text';
 
 type ProductRow = {
     key: string;
@@ -191,12 +192,21 @@ export default function ProductsTable() {
                         </Typography.Title>
                         <Typography.Text>{t('subtitle')}</Typography.Text>
                     </div>
-                    <Button type="primary" onClick={openAdd}>{t('addProduct')}</Button>
+                    <Button
+                        className='h-10! border-0! overflow-hidden p-0!'
+                        type="primary"
+                        style={{ backgroundColor: '#13B272' }}
+                        onClick={openAdd}
+                    >
+                        <div className="flex items-center h-full">
+                            <div className="h-full flex items-center justify-center px-4" style={{ backgroundColor: '#119F65' }}>
+                                <PlusOutlined />
+                            </div>
+                            <Text className="px-3 text-white!">{t('addProduct')}</Text>
+                        </div>
+                    </Button>
                 </div>
-                <Card>
-                    <Table columns={columns} dataSource={rows} pagination={false} />
-                </Card>
-
+                <Table columns={columns} dataSource={rows} pagination={false} />
                 <Modal
                     title={t('deleteTitle')}
                     open={isDeleteOpen}
@@ -204,6 +214,12 @@ export default function ProductsTable() {
                     onOk={handleDelete}
                     okText={t('deleteOk')}
                     cancelText={t('deleteCancel')}
+                    okButtonProps={{
+                        className: 'bg-[#ff4d4f]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Typography.Text>
                         {selectedProduct ? t('deleteConfirmWithName', { name: selectedProduct.name }) : t('deleteConfirm')}
@@ -217,6 +233,12 @@ export default function ProductsTable() {
                     onOk={handleSave}
                     okText={t('save')}
                     cancelText={t('cancel')}
+                    okButtonProps={{
+                        className: 'bg-[#119F65]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Form layout="vertical" form={form}>
                         <Form.Item label={t('name')} name="name">
@@ -226,10 +248,13 @@ export default function ProductsTable() {
                             <Input className="h-10" />
                         </Form.Item>
                         <Form.Item label={t('category')} name="category">
-                            <Select options={categoryOptions} className='h-10!'/>
+                            <Select options={categoryOptions} className='h-10!' />
                         </Form.Item>
                         <Form.Item label={t('basePrice')} name="basePrice">
-                            <Input className="h-10" />
+                            <Space.Compact className='w-full'>
+                                <Input className="h-10" />
+                                <Space.Addon>SAR</Space.Addon>
+                            </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('sortOrder')} name="sortOrder">
                             <Input className="h-10" type="number" />
@@ -251,6 +276,12 @@ export default function ProductsTable() {
                     onOk={handleAdd}
                     okText={t('save')}
                     cancelText={t('cancel')}
+                    okButtonProps={{
+                        className: 'bg-[#119F65]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Form layout="vertical" form={addForm}>
                         <Form.Item label={t('name')} name="name" rules={[{ required: true }]}>
@@ -260,10 +291,13 @@ export default function ProductsTable() {
                             <Input className="h-10" />
                         </Form.Item>
                         <Form.Item label={t('category')} name="category">
-                            <Select options={categoryOptions} className='h-10!'/>
+                            <Select options={categoryOptions} className='h-10!' />
                         </Form.Item>
                         <Form.Item label={t('basePrice')} name="basePrice">
-                            <Input className="h-10" />
+                            <Space.Compact className='w-full'>
+                                <Input className="h-10" />
+                                <Space.Addon>SAR</Space.Addon>
+                            </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('sortOrder')} name="sortOrder">
                             <Input className="h-10" type="number" />

@@ -15,15 +15,15 @@ export default function AppShell({ children }: Props) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     return (
-        <Layout style={{ minHeight: '100vh' }}>
+        <Layout style={{ height: '100vh', overflow: 'hidden' }}>
             <AppSidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} />
-            <Layout>
+            <Layout style={{ height: '100vh', overflow: 'hidden' }}>
                 <AppHeader
                     sidebarCollapsed={sidebarCollapsed}
                     setSidebarCollapsed={setSidebarCollapsed}
                 />
-                <Content style={{ margin: '0' }}>
-                    <main className="bg-[#E4EBF2] min-h-[calc(100vh-64px)] overflow-y-auto">
+                <Content style={{ margin: '0', overflow: 'hidden' }}>
+                    <main className="bg-[#E4EBF2] h-[calc(100vh-50px)] overflow-y-auto">
                         <div className="py-6 w-full lg:max-w-5xl lg:mx-auto">
                             {children}
                         </div>

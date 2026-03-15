@@ -63,7 +63,6 @@ export default function AppSidebar({ collapsed, onCollapsedChange }: AppSidebarP
         customers: '/app/customers',
         offersDiscounts: '/app/promotions',
         promoCodes: '/app/vouchers',
-        notifications: '/app/notifications',
         accountSecurity: '/app/account-and-security'
     };
 
@@ -139,7 +138,6 @@ export default function AppSidebar({ collapsed, onCollapsedChange }: AppSidebarP
             getItem(t('offersDiscounts'), 'offersDiscounts'),
             getItem(t('promoCodes'), 'promoCodes')
         ]),
-        getItem(t('notifications'), 'notifications', <FileOutlined />),
         getItem(t('settings'), 'settings', <FileOutlined />, [
             getItem(t('accountSecurity'), 'accountSecurity')
         ])
@@ -158,8 +156,15 @@ export default function AppSidebar({ collapsed, onCollapsedChange }: AppSidebarP
             breakpoint="lg"
             collapsedWidth={60}
             onBreakpoint={(broken) => onCollapsedChange(broken)}
-            style={{ background: colorBgContainer }}
+            style={{
+                background: colorBgContainer,
+                height: '100vh',
+                position: 'sticky',
+                top: 0,
+                overflow: 'auto'
+            }}
             width={260}
+            className='border-e border-gray-300'
         >
             <div className="h-4" />
             <Menu

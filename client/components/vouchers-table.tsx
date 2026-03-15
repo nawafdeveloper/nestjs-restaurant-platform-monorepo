@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Button, Card, ConfigProvider, DatePicker, Form, Input, Modal, Select, Space, Switch, Table, Tag, Typography } from 'antd';
+import { Button, Card, ConfigProvider, DatePicker, Form, Input, InputNumber, Modal, Select, Space, Switch, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useLocale, useTranslations } from 'next-intl';
 import dayjs from 'dayjs';
+import Text from 'antd/es/typography/Text';
+import { PlusOutlined } from '@ant-design/icons';
 
 type VoucherRow = {
     key: string;
@@ -131,9 +133,9 @@ export default function VouchersTable() {
                 key: nextKey,
                 code: values.code,
                 discountType: values.discountType,
-                discountValue: values.discountValue || '0',
-                minOrderAmount: values.minOrderAmount || '',
-                maxDiscountAmount: values.maxDiscountAmount || '',
+                discountValue: values.discountValue?.toString() || '0',
+                minOrderAmount: values.minOrderAmount?.toString() || '',
+                maxDiscountAmount: values.maxDiscountAmount?.toString() || '',
                 maxUsageCount: values.maxUsageCount || 0,
                 usageCount: 0,
                 maxUsagePerCustomer: values.maxUsagePerCustomer || 1,
@@ -216,12 +218,21 @@ export default function VouchersTable() {
                         </Typography.Title>
                         <Typography.Text>{t('subtitle')}</Typography.Text>
                     </div>
-                    <Button type="primary" onClick={openAdd}>{t('addVoucher')}</Button>
+                    <Button
+                        className='h-10! border-0! overflow-hidden p-0!'
+                        type="primary"
+                        style={{ backgroundColor: '#13B272' }}
+                        onClick={openAdd}
+                    >
+                        <div className="flex items-center h-full">
+                            <div className="h-full flex items-center justify-center px-4" style={{ backgroundColor: '#119F65' }}>
+                                <PlusOutlined />
+                            </div>
+                            <Text className="px-3 text-white!">{t('addVoucher')}</Text>
+                        </div>
+                    </Button>
                 </div>
-                <Card>
-                    <Table columns={columns} dataSource={rows} pagination={false} />
-                </Card>
-
+                <Table columns={columns} dataSource={rows} pagination={false} />
                 <Modal
                     title={t('deleteTitle')}
                     open={isDeleteOpen}
@@ -229,12 +240,17 @@ export default function VouchersTable() {
                     onOk={handleDelete}
                     okText={t('deleteOk')}
                     cancelText={t('deleteCancel')}
+                    okButtonProps={{
+                        className: 'bg-[#ff4d4f]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Typography.Text>
                         {selectedVoucher ? t('deleteConfirmWithName', { code: selectedVoucher.code }) : t('deleteConfirm')}
                     </Typography.Text>
                 </Modal>
-
                 <Modal
                     title={t('editVoucher')}
                     open={isEditOpen}
@@ -242,6 +258,12 @@ export default function VouchersTable() {
                     onOk={handleSave}
                     okText={t('save')}
                     cancelText={t('cancel')}
+                    okButtonProps={{
+                        className: 'bg-[#119F65]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Form layout="vertical" form={form}>
                         <Form.Item label={t('code')} name="code">
@@ -262,8 +284,19 @@ export default function VouchersTable() {
                                 return (
                                     <Form.Item label={t('discountValue')} name="discountValue">
                                         <Space.Compact className="w-full">
-                                            <Input className="h-10" />
-                                            <span className="inline-flex items-center px-3 border border-gray-200 border-l-0 bg-gray-50 text-sm">
+                                            <Form.Item name="discountValue" noStyle>
+                                                <InputNumber
+                                                    className="w-full h-10"
+                                                    min={0}
+                                                    precision={isPercent ? 2 : 2}
+                                                    max={isPercent ? 100 : undefined}
+                                                    step={0.01}
+                                                    placeholder="0.00"
+                                                    controls={false}
+                                                    style={{ width: 'calc(100% - 40px)' }}
+                                                />
+                                            </Form.Item>
+                                            <span className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 bg-gray-50 text-sm">
                                                 {isPercent ? '%' : t('currency')}
                                             </span>
                                         </Space.Compact>
@@ -273,25 +306,59 @@ export default function VouchersTable() {
                         </Form.Item>
                         <Form.Item label={t('minOrderAmount')} name="minOrderAmount">
                             <Space.Compact className="w-full">
-                                <Input className="h-10" />
-                                <span className="inline-flex items-center px-3 border border-gray-200 border-l-0 bg-gray-50 text-sm">
+                                <Form.Item name="minOrderAmount" noStyle>
+                                    <InputNumber
+                                        className="w-full h-10"
+                                        min={0}
+                                        precision={2}
+                                        step={0.01}
+                                        placeholder="0.00"
+                                        controls={false}
+                                        style={{ width: 'calc(100% - 40px)' }}
+                                    />
+                                </Form.Item>
+                                <span className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 bg-gray-50 text-sm">
                                     {t('currency')}
                                 </span>
                             </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('maxDiscountAmount')} name="maxDiscountAmount">
                             <Space.Compact className="w-full">
-                                <Input className="h-10" />
-                                <span className="inline-flex items-center px-3 border border-gray-200 border-l-0 bg-gray-50 text-sm">
+                                <Form.Item name="maxDiscountAmount" noStyle>
+                                    <InputNumber
+                                        className="w-full h-10"
+                                        min={0}
+                                        precision={2}
+                                        step={0.01}
+                                        placeholder="0.00"
+                                        controls={false}
+                                        style={{ width: 'calc(100% - 40px)' }}
+                                    />
+                                </Form.Item>
+                                <span className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 bg-gray-50 text-sm">
                                     {t('currency')}
                                 </span>
                             </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('maxUsageCount')} name="maxUsageCount">
-                            <Input className="h-10" type="number" />
+                            <InputNumber
+                                className="w-full! h-10"
+                                min={0}
+                                precision={0}
+                                step={1}
+                                placeholder="0"
+                                controls={false}
+                            />
                         </Form.Item>
                         <Form.Item label={t('maxUsagePerCustomer')} name="maxUsagePerCustomer">
-                            <Input className="h-10" type="number" />
+                            <InputNumber
+                                className="w-full! h-10"
+                                min={1}
+                                precision={0}
+                                step={1}
+                                placeholder="1"
+                                controls={false}
+                            />
                         </Form.Item>
                         <Form.Item label={t('dateRange')} name="dateRange">
                             <DatePicker.RangePicker className="w-full h-10!" />
@@ -301,7 +368,6 @@ export default function VouchersTable() {
                         </Form.Item>
                     </Form>
                 </Modal>
-
                 <Modal
                     title={t('addVoucher')}
                     open={isAddOpen}
@@ -309,6 +375,12 @@ export default function VouchersTable() {
                     onOk={handleAdd}
                     okText={t('save')}
                     cancelText={t('cancel')}
+                    okButtonProps={{
+                        className: 'bg-[#119F65]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Form layout="vertical" form={addForm}>
                         <Form.Item label={t('code')} name="code" rules={[{ required: true }]}>
@@ -327,10 +399,21 @@ export default function VouchersTable() {
                             {({ getFieldValue }) => {
                                 const isPercent = getFieldValue('discountType') === 'percentage';
                                 return (
-                                    <Form.Item label={t('discountValue')} name="discountValue">
+                                    <Form.Item label={t('discountValue')} name="discountValue" rules={[{ required: true }]}>
                                         <Space.Compact className="w-full">
-                                            <Input className="h-10" />
-                                            <span className="inline-flex items-center px-3 border border-gray-200 border-l-0 bg-gray-50 text-sm">
+                                            <Form.Item name="discountValue" noStyle>
+                                                <InputNumber
+                                                    className="w-full h-10"
+                                                    min={0}
+                                                    precision={isPercent ? 2 : 2}
+                                                    max={isPercent ? 100 : undefined}
+                                                    step={0.01}
+                                                    placeholder="0.00"
+                                                    controls={false}
+                                                    style={{ width: 'calc(100% - 40px)' }}
+                                                />
+                                            </Form.Item>
+                                            <span className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 bg-gray-50 text-sm">
                                                 {isPercent ? '%' : t('currency')}
                                             </span>
                                         </Space.Compact>
@@ -340,25 +423,59 @@ export default function VouchersTable() {
                         </Form.Item>
                         <Form.Item label={t('minOrderAmount')} name="minOrderAmount">
                             <Space.Compact className="w-full">
-                                <Input className="h-10" />
-                                <span className="inline-flex items-center px-3 border border-gray-200 border-l-0 bg-gray-50 text-sm">
+                                <Form.Item name="minOrderAmount" noStyle>
+                                    <InputNumber
+                                        className="w-full h-10"
+                                        min={0}
+                                        precision={2}
+                                        step={0.01}
+                                        placeholder="0.00"
+                                        controls={false}
+                                        style={{ width: 'calc(100% - 40px)' }}
+                                    />
+                                </Form.Item>
+                                <span className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 bg-gray-50 text-sm">
                                     {t('currency')}
                                 </span>
                             </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('maxDiscountAmount')} name="maxDiscountAmount">
                             <Space.Compact className="w-full">
-                                <Input className="h-10" />
-                                <span className="inline-flex items-center px-3 border border-gray-200 border-l-0 bg-gray-50 text-sm">
+                                <Form.Item name="maxDiscountAmount" noStyle>
+                                    <InputNumber
+                                        className="w-full h-10"
+                                        min={0}
+                                        precision={2}
+                                        step={0.01}
+                                        placeholder="0.00"
+                                        controls={false}
+                                        style={{ width: 'calc(100% - 40px)' }}
+                                    />
+                                </Form.Item>
+                                <span className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 bg-gray-50 text-sm">
                                     {t('currency')}
                                 </span>
                             </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('maxUsageCount')} name="maxUsageCount">
-                            <Input className="h-10" type="number" />
+                            <InputNumber
+                                className="w-full! h-10"
+                                min={0}
+                                precision={0}
+                                step={1}
+                                placeholder="0"
+                                controls={false}
+                            />
                         </Form.Item>
                         <Form.Item label={t('maxUsagePerCustomer')} name="maxUsagePerCustomer">
-                            <Input className="h-10" type="number" />
+                            <InputNumber
+                                className="w-full! h-10"
+                                min={1}
+                                precision={0}
+                                step={1}
+                                placeholder="1"
+                                controls={false}
+                            />
                         </Form.Item>
                         <Form.Item label={t('dateRange')} name="dateRange">
                             <DatePicker.RangePicker className="w-full h-10!" />

@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Button, Card, ConfigProvider, DatePicker, Form, Input, Modal, Select, Space, Switch, Table, Tag, Typography } from 'antd';
+import { Button, Card, ConfigProvider, DatePicker, Form, Input, InputNumber, Modal, Select, Space, Switch, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useLocale, useTranslations } from 'next-intl';
 import dayjs from 'dayjs';
+import Text from 'antd/es/typography/Text';
+import { PlusOutlined } from '@ant-design/icons';
 
 type PromotionRow = {
     key: string;
@@ -219,12 +221,21 @@ export default function PromotionsTable() {
                         </Typography.Title>
                         <Typography.Text>{t('subtitle')}</Typography.Text>
                     </div>
-                    <Button type="primary" onClick={openAdd}>{t('addPromotion')}</Button>
+                    <Button
+                        className='h-10! border-0! overflow-hidden p-0!'
+                        type="primary"
+                        style={{ backgroundColor: '#13B272' }}
+                        onClick={openAdd}
+                    >
+                        <div className="flex items-center h-full">
+                            <div className="h-full flex items-center justify-center px-4" style={{ backgroundColor: '#119F65' }}>
+                                <PlusOutlined />
+                            </div>
+                            <Text className="px-3 text-white!">{t('addPromotion')}</Text>
+                        </div>
+                    </Button>
                 </div>
-                <Card>
-                    <Table columns={columns} dataSource={rows} pagination={false} />
-                </Card>
-
+                <Table columns={columns} dataSource={rows} pagination={false} />
                 <Modal
                     title={t('deleteTitle')}
                     open={isDeleteOpen}
@@ -232,6 +243,12 @@ export default function PromotionsTable() {
                     onOk={handleDelete}
                     okText={t('deleteOk')}
                     cancelText={t('deleteCancel')}
+                    okButtonProps={{
+                        className: 'bg-[#ff4d4f]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Typography.Text>
                         {selectedPromotion ? t('deleteConfirmWithName', { name: selectedPromotion.name }) : t('deleteConfirm')}
@@ -245,6 +262,12 @@ export default function PromotionsTable() {
                     onOk={handleSave}
                     okText={t('save')}
                     cancelText={t('cancel')}
+                    okButtonProps={{
+                        className: 'bg-[#119F65]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Form layout="vertical" form={form}>
                         <Form.Item label={t('name')} name="name">
@@ -263,7 +286,44 @@ export default function PromotionsTable() {
                             />
                         </Form.Item>
                         <Form.Item label={t('discountValue')} name="discountValue">
-                            <Input className="h-10" />
+                            <Form.Item noStyle shouldUpdate={(prev, curr) => prev.discountType !== curr.discountType}>
+                                {({ getFieldValue }) => {
+                                    const type = getFieldValue('discountType');
+                                    const isPercentage = type === 'percentage';
+
+                                    return (
+                                        <Space.Compact className='w-full'>
+                                            <Form.Item name="discountValue" noStyle>
+                                                {isPercentage ? (
+                                                    <InputNumber
+                                                        className="w-full h-10"
+                                                        min={0}
+                                                        max={100}
+                                                        precision={2}
+                                                        step={0.01}
+                                                        placeholder="0.00"
+                                                        controls={false}
+                                                        style={{ width: 'calc(100% - 40px)' }}
+                                                    />
+                                                ) : (
+                                                    <InputNumber
+                                                        className="w-full h-10"
+                                                        min={0}
+                                                        precision={2}
+                                                        step={0.01}
+                                                        placeholder="0.00"
+                                                        controls={false}
+                                                        style={{ width: 'calc(100% - 40px)' }}
+                                                    />
+                                                )}
+                                            </Form.Item>
+                                            <div className="inline-flex items-center justify-center w-10 h-10 bg-gray-50 border border-gray-300">
+                                                {isPercentage ? '%' : t('currency')}
+                                            </div>
+                                        </Space.Compact>
+                                    );
+                                }}
+                            </Form.Item>
                         </Form.Item>
                         <Form.Item label={t('promotionType')} name="promotionType">
                             <Select
@@ -281,14 +341,14 @@ export default function PromotionsTable() {
                                 if (type === 'category') {
                                     return (
                                         <Form.Item label={t('targetCategory')} name="targetId">
-                                            <Select options={categoryOptions} className='h-10!'/>
+                                            <Select options={categoryOptions} className='h-10!' />
                                         </Form.Item>
                                     );
                                 }
                                 if (type === 'product') {
                                     return (
                                         <Form.Item label={t('targetProduct')} name="targetId">
-                                            <Select options={productOptions} className='h-10!'/>
+                                            <Select options={productOptions} className='h-10!' />
                                         </Form.Item>
                                     );
                                 }
@@ -296,10 +356,40 @@ export default function PromotionsTable() {
                             }}
                         </Form.Item>
                         <Form.Item label={t('minOrderAmount')} name="minOrderAmount">
-                            <Input className="h-10" />
+                            <Space.Compact className='w-full'>
+                                <Form.Item name="minOrderAmount" noStyle>
+                                    <InputNumber
+                                        className="w-full h-10"
+                                        min={0}
+                                        precision={2}
+                                        step={0.01}
+                                        placeholder="0.00"
+                                        controls={false}
+                                        style={{ width: 'calc(100% - 40px)' }}
+                                    />
+                                </Form.Item>
+                                <div className="inline-flex items-center justify-center w-10 h-10 bg-gray-50 border border-gray-300">
+                                    {t('currency')}
+                                </div>
+                            </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('maxDiscountAmount')} name="maxDiscountAmount">
-                            <Input className="h-10" />
+                            <Space.Compact className='w-full'>
+                                <Form.Item name="maxDiscountAmount" noStyle>
+                                    <InputNumber
+                                        className="w-full h-10"
+                                        min={0}
+                                        precision={2}
+                                        step={0.01}
+                                        placeholder="0.00"
+                                        controls={false}
+                                        style={{ width: 'calc(100% - 40px)' }}
+                                    />
+                                </Form.Item>
+                                <div className="inline-flex items-center justify-center w-10 h-10 bg-gray-50 border border-gray-300">
+                                    {t('currency')}
+                                </div>
+                            </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('dateRange')} name="dateRange">
                             <DatePicker.RangePicker className="w-full h-10!" />
@@ -309,7 +399,6 @@ export default function PromotionsTable() {
                         </Form.Item>
                     </Form>
                 </Modal>
-
                 <Modal
                     title={t('addPromotion')}
                     open={isAddOpen}
@@ -317,6 +406,12 @@ export default function PromotionsTable() {
                     onOk={handleAdd}
                     okText={t('save')}
                     cancelText={t('cancel')}
+                    okButtonProps={{
+                        className: 'bg-[#119F65]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Form layout="vertical" form={addForm}>
                         <Form.Item label={t('name')} name="name" rules={[{ required: true }]}>
@@ -334,8 +429,45 @@ export default function PromotionsTable() {
                                 className='h-10!'
                             />
                         </Form.Item>
-                        <Form.Item label={t('discountValue')} name="discountValue">
-                            <Input className="h-10" />
+                        <Form.Item label={t('discountValue')} name="discountValue" rules={[{ required: true }]}>
+                            <Form.Item noStyle shouldUpdate={(prev, curr) => prev.discountType !== curr.discountType}>
+                                {({ getFieldValue }) => {
+                                    const type = getFieldValue('discountType');
+                                    const isPercentage = type === 'percentage';
+
+                                    return (
+                                        <Space.Compact className='w-full'>
+                                            <Form.Item name="discountValue" noStyle>
+                                                {isPercentage ? (
+                                                    <InputNumber
+                                                        className="w-full h-10"
+                                                        min={0}
+                                                        max={100}
+                                                        precision={2}
+                                                        step={0.01}
+                                                        placeholder="0.00"
+                                                        controls={false}
+                                                        style={{ width: 'calc(100% - 40px)' }}
+                                                    />
+                                                ) : (
+                                                    <InputNumber
+                                                        className="w-full h-10"
+                                                        min={0}
+                                                        precision={2}
+                                                        step={0.01}
+                                                        placeholder="0.00"
+                                                        controls={false}
+                                                        style={{ width: 'calc(100% - 40px)' }}
+                                                    />
+                                                )}
+                                            </Form.Item>
+                                            <div className="inline-flex items-center justify-center w-10 h-10 bg-gray-50 border border-gray-300">
+                                                {isPercentage ? '%' : t('currency')}
+                                            </div>
+                                        </Space.Compact>
+                                    );
+                                }}
+                            </Form.Item>
                         </Form.Item>
                         <Form.Item label={t('promotionType')} name="promotionType" rules={[{ required: true }]}>
                             <Select
@@ -352,15 +484,15 @@ export default function PromotionsTable() {
                                 const type = getFieldValue('promotionType');
                                 if (type === 'category') {
                                     return (
-                                        <Form.Item label={t('targetCategory')} name="targetId">
-                                            <Select options={categoryOptions} className='h-10!'/>
+                                        <Form.Item label={t('targetCategory')} name="targetId" rules={[{ required: true }]}>
+                                            <Select options={categoryOptions} className='h-10!' />
                                         </Form.Item>
                                     );
                                 }
                                 if (type === 'product') {
                                     return (
-                                        <Form.Item label={t('targetProduct')} name="targetId">
-                                            <Select options={productOptions} className='h-10!'/>
+                                        <Form.Item label={t('targetProduct')} name="targetId" rules={[{ required: true }]}>
+                                            <Select options={productOptions} className='h-10!' />
                                         </Form.Item>
                                     );
                                 }
@@ -368,10 +500,40 @@ export default function PromotionsTable() {
                             }}
                         </Form.Item>
                         <Form.Item label={t('minOrderAmount')} name="minOrderAmount">
-                            <Input className="h-10" />
+                            <Space.Compact className='w-full'>
+                                <Form.Item name="minOrderAmount" noStyle>
+                                    <InputNumber
+                                        className="w-full h-10"
+                                        min={0}
+                                        precision={2}
+                                        step={0.01}
+                                        placeholder="0.00"
+                                        controls={false}
+                                        style={{ width: 'calc(100% - 40px)' }}
+                                    />
+                                </Form.Item>
+                                <div className="inline-flex items-center justify-center w-10 h-10 bg-gray-50 border border-gray-300">
+                                    {t('currency')}
+                                </div>
+                            </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('maxDiscountAmount')} name="maxDiscountAmount">
-                            <Input className="h-10" />
+                            <Space.Compact className='w-full'>
+                                <Form.Item name="maxDiscountAmount" noStyle>
+                                    <InputNumber
+                                        className="w-full h-10"
+                                        min={0}
+                                        precision={2}
+                                        step={0.01}
+                                        placeholder="0.00"
+                                        controls={false}
+                                        style={{ width: 'calc(100% - 40px)' }}
+                                    />
+                                </Form.Item>
+                                <div className="inline-flex items-center justify-center w-10 h-10 bg-gray-50 border border-gray-300">
+                                    {t('currency')}
+                                </div>
+                            </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('dateRange')} name="dateRange">
                             <DatePicker.RangePicker className="w-full h-10!" />

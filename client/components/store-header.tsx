@@ -45,35 +45,8 @@ export default function StoreHeader() {
 
     return (
         <header className="relative overflow-hidden" style={{ backgroundColor: headerColor }}>
-            <div className="relative px-4 lg:px-8 pb-4 lg:pb-8">
-                <div className="relative mb-4 -mx-4 lg:-mx-8 overflow-hidden lg:h-64 bg-gray-200">
-                    <Image
-                        src="https://media-files.tryordersystem.com/tenant/7gm/settings/68ecb43fb1622.png"
-                        alt="Store banner"
-                        fill
-                        sizes="100vw"
-                        className="object-cover"
-                        priority
-                    />
-                    <div className="relative flex h-32 items-end px-4 pb-3 lg:px-8">
-                        <div className="flex items-center gap-3">
-                            <div className="relative h-14 w-14 overflow-hidden rounded-full justify-center items-center bg-gray-300 shadow-sm ring-1 ring-gray-200">
-                                <Image
-                                    src="https://media-files.tryordersystem.com/tenant/7gm/settings/684ecd5d6b62e.png"
-                                    alt="Store logo"
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
-                            <div className="bg-black/30 px-3 py-1.5">
-                                <Typography.Title level={4} className="mb-0! text-white!">
-                                    {t('storeName')}
-                                </Typography.Title>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex items-start gap-x-5 justify-between">
+            <div className="relative">
+                <div className="flex items-start gap-x-5 justify-between p-4 lg:p-8">
                     <Button
                         onClick={() => setMenuOpen(true)}
                         type="default"
@@ -89,12 +62,6 @@ export default function StoreHeader() {
                         >
                             <Typography.Text>{t('chooseBranch')}</Typography.Text>
                         </Button>
-
-                        <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600">
-                            <span className="rounded-full bg-white px-3 py-1 shadow-sm">
-                                <Typography.Text className="text-xs">{t('openNow')}</Typography.Text>
-                            </span>
-                        </div>
                     </div>
                     <Button
                         onClick={() => setCartOpen(true)}
@@ -103,6 +70,38 @@ export default function StoreHeader() {
                         className="rounded-sm! h-10! w-10! border-0 shadow-sm"
                         icon={<ShoppingOutlined />}
                     />
+                </div>
+                <div className="relative -mx-4 lg:-mx-8 overflow-hidden lg:h-64 bg-gray-200">
+                    <Image
+                        src="https://media-files.tryordersystem.com/tenant/7gm/settings/68ecb43fb1622.png"
+                        alt="Store banner"
+                        fill
+                        sizes="100vw"
+                        className="object-cover"
+                        priority
+                    />
+                    <div className="relative flex h-32 items-end px-12 pb-3 lg:px-24">
+                        <div className="flex items-center gap-3">
+                            <div className="relative h-14 w-14 overflow-hidden rounded-full justify-center items-center bg-gray-300 shadow-sm ring-1 ring-gray-200">
+                                <Image
+                                    src="https://media-files.tryordersystem.com/tenant/7gm/settings/684ecd5d6b62e.png"
+                                    alt="Store logo"
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
+                            <div className="bg-black/30 px-3 py-1.5">
+                                <Typography.Title level={4} className="mb-0! text-white!">
+                                    {t('storeName')}
+                                </Typography.Title>
+                            </div>
+                            <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600">
+                                <span className="rounded-full bg-white px-3 py-1 shadow-sm">
+                                    <Typography.Text className="text-xs">{t('openNow')}</Typography.Text>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

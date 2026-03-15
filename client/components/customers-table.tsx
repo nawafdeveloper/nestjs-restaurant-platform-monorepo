@@ -111,10 +111,7 @@ export default function CustomersTable() {
                         <Typography.Text>{t('subtitle')}</Typography.Text>
                     </div>
                 </div>
-                <Card>
-                    <Table columns={columns} dataSource={rows} pagination={false} />
-                </Card>
-
+                <Table columns={columns} dataSource={rows} pagination={false} />
                 <Modal
                     title={t('customerDetails')}
                     open={isViewOpen}
@@ -122,6 +119,12 @@ export default function CustomersTable() {
                     onOk={handleSave}
                     okText={t('save')}
                     cancelText={t('cancel')}
+                    okButtonProps={{
+                        className: 'bg-[#119F65]! h-10! border-0!'
+                    }}
+                    cancelButtonProps={{
+                        className: 'h-10! bg-[#D9E5F1]! border-0!'
+                    }}
                 >
                     <Form layout="vertical" form={form}>
                         <Form.Item label={t('name')} name="name">

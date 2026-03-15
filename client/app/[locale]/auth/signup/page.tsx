@@ -1,12 +1,15 @@
+import AuthHeros from "@/components/auth-hero";
 import SignupForm from "@/components/signup-form";
 
 export default async function SignupPage() {
     return (
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen bg-[#E4EBF2]">
             <div
-                className="hidden md:block md:w-1/2"
-                style={{ backgroundColor: '#0E79EB' }}
-            />
+                className="hidden md:flex md:w-1/2 justify-center items-center bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: "url('/auth-hero-bg.png')" }}
+            >
+                <AuthHeros />
+            </div>
             <div className="w-full md:w-1/2 flex items-center justify-center p-8">
                 <div className="w-full max-w-md">
                     <SignupForm />

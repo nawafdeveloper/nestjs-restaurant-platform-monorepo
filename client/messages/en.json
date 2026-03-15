@@ -22,6 +22,15 @@
         "alreadyHaveAccount": "Already have an account?",
         "loginNow": "Login now"
     },
+    "AuthHero": {
+        "title": "Everything you need to manage your business in one software!",
+        "subtitle": "Supports 50+ different industries and 20+ professional business management applications!",
+        "feature1": "Multi-store & restaurant management",
+        "feature2": "Online ordering & delivery system",
+        "feature3": "Real-time analytics & inventory tracking",
+        "feature4": "Customer loyalty programs & insights",
+        "footer": "All features customized according to your industry!"
+    },
     "LanguageSelector": {
         "label": "Language",
         "english": "English",

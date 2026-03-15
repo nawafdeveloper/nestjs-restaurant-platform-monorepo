@@ -17,9 +17,12 @@ export default function AppHeader({ sidebarCollapsed, setSidebarCollapsed }: Pro
             className="flex items-center justify-between"
             style={{
                 background: '#0E79EB',
-                height: 52,
+                height: 50,
                 padding: 0,
-                lineHeight: '64px'
+                lineHeight: '50px',
+                position: 'sticky',
+                top: 0,
+                zIndex: 10
             }}
         >
             <Button

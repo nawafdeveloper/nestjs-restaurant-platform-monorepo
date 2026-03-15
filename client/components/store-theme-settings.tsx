@@ -1,6 +1,6 @@
 "use client";
 
-import { UploadOutlined } from '@ant-design/icons';
+import { SaveOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, Card, Col, ColorPicker, Form, Row, Segmented, Typography, Upload } from 'antd';
 import { useTranslations } from 'next-intl';
 
@@ -29,48 +29,61 @@ export default function StoreThemeSettings() {
                 <Text>{t('subtitle')}</Text>
             </div>
 
-            <Form className='h-10!' layout="vertical" initialValues={initialValues}>
-                <Row gutter={[16, 16]}>
-                    <Col xs={24} md={12}>
-                        <Form.Item label={t('primaryColor')} name="primaryColor">
-                            <ColorPicker showText allowClear />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item label={t('secondaryColor')} name="secondaryColor">
-                            <ColorPicker showText allowClear />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item
-                            label={t('banner')}
-                            name="bannerFile"
-                            valuePropName="fileList"
-                            getValueFromEvent={(e) => (Array.isArray(e?.fileList) ? e.fileList : [])}
+            <Card>
+                <Form layout="vertical" initialValues={initialValues}>
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} md={12}>
+                            <Form.Item label={t('primaryColor')} name="primaryColor">
+                                <ColorPicker showText allowClear />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                            <Form.Item label={t('secondaryColor')} name="secondaryColor">
+                                <ColorPicker showText allowClear />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                            <Form.Item
+                                label={t('banner')}
+                                name="bannerFile"
+                                valuePropName="fileList"
+                                getValueFromEvent={(e) => (Array.isArray(e?.fileList) ? e.fileList : [])}
+                            >
+                                <Upload beforeUpload={() => false} maxCount={1} showUploadList>
+                                    <Button icon={<UploadOutlined />}>{t('uploadBanner')}</Button>
+                                </Upload>
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                            <Form.Item label={t('layout')} name="layout">
+                                <Segmented
+                                    options={[
+                                        { label: t('layoutClassic'), value: 'classic' },
+                                        { label: t('layoutCentered'), value: 'centered' },
+                                        { label: t('layoutGrid'), value: 'grid' }
+                                    ]}
+                                    block
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <div className="flex justify-end gap-3 mt-4">
+                        <Button className='h-10! bg-[#D9E5F1]! border-0!'>{t('cancel')}</Button>
+                        <Button
+                            className='h-10! border-0! overflow-hidden p-0!'
+                            type="primary"
+                            style={{ backgroundColor: '#13B272' }}
                         >
-                            <Upload beforeUpload={() => false} maxCount={1} showUploadList>
-                                <Button icon={<UploadOutlined />}>{t('uploadBanner')}</Button>
-                            </Upload>
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item label={t('layout')} name="layout">
-                            <Segmented
-                                options={[
-                                    { label: t('layoutClassic'), value: 'classic' },
-                                    { label: t('layoutCentered'), value: 'centered' },
-                                    { label: t('layoutGrid'), value: 'grid' }
-                                ]}
-                                block
-                            />
-                        </Form.Item>
-                    </Col>
-                </Row>
-                <div className="flex justify-end gap-3">
-                    <Button>{t('cancel')}</Button>
-                    <Button type="primary">{t('save')}</Button>
-                </div>
-            </Form>
+                            <div className="flex items-center h-full">
+                                <div className="h-full flex items-center justify-center px-4" style={{ backgroundColor: '#119F65' }}>
+                                    <SaveOutlined />
+                                </div>
+                                <Text className="px-3 text-white!">{t('save')}</Text>
+                            </div>
+                        </Button>
+                    </div>
+                </Form>
+            </Card>
         </div>
     );
 }
