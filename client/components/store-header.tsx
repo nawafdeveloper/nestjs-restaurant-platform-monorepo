@@ -1,33 +1,57 @@
 "use client";
-
-import {
-    EnvironmentOutlined,
-    MenuOutlined,
-    ShoppingOutlined
-} from "@ant-design/icons";
-import { Button, Drawer, Modal, Tabs, Typography } from "antd";
-import { useCallback, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import Image from 'next/image';
+import { Button, ConfigProvider, Drawer, FloatButton, Modal, Segmented, Divider, Radio } from 'antd';
+import Text from 'antd/es/typography/Text';
+import { MdDeliveryDining, MdHail, MdShareLocation, MdMenu, MdStar, MdAccessTime, MdHome, MdInfo, MdPhone, MdLogin, MdShoppingCart, MdClose, MdStore } from 'react-icons/md';
+import { useCallback, useMemo, useState } from 'react';
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
-import Image from "next/image";
+import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
+import { Branch, CartItem, MapConfig, StoreInfo } from '@/types';
 
-export default function StoreHeader() {
+interface StoreHeaderProps {
+    storeInfo: StoreInfo;
+    branches: Branch[];
+    cartItems?: CartItem[];
+    mapConfig?: MapConfig;
+    googleMapsApiKey?: string;
+    onCheckout?: (items: CartItem[]) => void;
+    onBranchSelect?: (branchId: string) => void;
+    onLocationSelect?: (location: { lat: number; lng: number }) => void;
+    onRemoveCartItem?: (itemId: string) => void;
+    primaryColor: string;
+    secondaryColor: string;
+}
+
+export default function StoreHeader({
+    storeInfo,
+    branches,
+    cartItems = [],
+    mapConfig = { defaultCenter: { lat: 24.7136, lng: 46.6753 }, zoom: 13 },
+    googleMapsApiKey = '',
+    onCheckout,
+    onBranchSelect,
+    onLocationSelect,
+    onRemoveCartItem,
+    primaryColor = '#0E79EB',
+    secondaryColor = '#DAECFF'
+}: StoreHeaderProps) {
     const t = useTranslations('StoreHeader');
-    const [modalOpen, setModalOpen] = useState(false);
-    const [menuOpen, setMenuOpen] = useState(false);
-    const [cartOpen, setCartOpen] = useState(false);
-    const [selectedBranch, setSelectedBranch] = useState('olaya');
-    const headerColor = '#991b26';
-    const [mapCenter, setMapCenter] = useState({ lat: 24.7136, lng: 46.6753 });
+    const tCart = useTranslations('CartModal');
+    const locale = useLocale();
+    const isArabic = locale === 'ar';
+
+    const [selectedSegment, setSelectedSegment] = useState<'delivery' | 'receipent'>('delivery');
+    const [menuDrawer, setMenuDrawer] = useState(false);
+    const [locationModal, setLocationModal] = useState(false);
+    const [branchModal, setBranchModal] = useState(false);
+    const [cartModal, setCartModal] = useState(false);
+    const [mapCenter, setMapCenter] = useState(mapConfig.defaultCenter);
     const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
 
-    const branches = [
-        { id: 'olaya', name: t('branches.olaya'), distance: t('branches.distance', { km: 3 }) },
-        { id: 'malaz', name: t('branches.malaz'), distance: t('branches.distance', { km: 6 }) },
-        { id: 'dammam', name: t('branches.dammam'), distance: t('branches.distance', { km: 18 }) }
-    ];
-
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY || '';
+    const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
     const handleUseMyLocation = useCallback(() => {
         if (!navigator.geolocation) return;
@@ -38,194 +62,349 @@ export default function StoreHeader() {
         });
     }, []);
 
+    const handleConfirmLocation = () => {
+        if (selectedLocation) onLocationSelect?.(selectedLocation);
+        setLocationModal(false);
+    };
+
+    const handleConfirmBranch = () => {
+        if (selectedBranch) onBranchSelect?.(selectedBranch);
+        setBranchModal(false);
+    };
+
     const mapOptions = useMemo(() => ({
         disableDefaultUI: true,
         zoomControl: true
     }), []);
 
     return (
-        <header className="relative overflow-hidden" style={{ backgroundColor: headerColor }}>
-            <div className="relative">
-                <div className="flex items-start gap-x-5 justify-between p-4 lg:p-8">
-                    <Button
-                        onClick={() => setMenuOpen(true)}
-                        type="default"
-                        shape="circle"
-                        className="rounded-sm! h-10! w-10! border-0 shadow-sm"
-                        icon={<MenuOutlined />}
-                    />
-                    <div className="flex flex-col items-center gap-3 w-full">
-                        <Button
-                            onClick={() => setModalOpen(true)}
-                            icon={<EnvironmentOutlined />}
-                            className="h-10! w-full rounded-full border border-gray-200 bg-white/80 text-gray-700 shadow-sm"
-                        >
-                            <Typography.Text>{t('chooseBranch')}</Typography.Text>
-                        </Button>
+        <ConfigProvider
+            theme={{
+                components: {
+                    Segmented: {
+                        itemSelectedBg: primaryColor,
+                        itemSelectedColor: secondaryColor,
+                        itemHoverBg: 'transparent',
+                        itemColor: primaryColor,
+                        trackPadding: 3,
+                        borderRadius: 99,
+                        itemHoverColor: primaryColor,
+                    },
+                    Radio: {
+                        buttonSolidCheckedBg: primaryColor,
+                        buttonSolidCheckedHoverBg: primaryColor,
+                        colorPrimary: primaryColor,
+                        colorPrimaryHover: primaryColor
+                    },
+                },
+            }}
+        >
+            {/* ── Float Cart Button ── */}
+            <FloatButton
+                icon={<MdShoppingCart className="size-6" style={{ color: secondaryColor }} />}
+                type="primary"
+                style={{ background: primaryColor, width: 60, height: 60 }}
+                onClick={() => setCartModal(true)}
+                badge={{ count: cartCount, color: '#E0E1FF', style: { color: primaryColor, fontWeight: 700 } }}
+            />
+
+            {/* ── Banner + Store Card ── */}
+            <div className="relative w-full pb-16 p-2">
+                <div
+                    className="relative w-full min-h-50 lg:min-h-100 bg-cover bg-center overflow-visible rounded-t-2xl"
+                    style={{ backgroundImage: `url(${storeInfo.banner})` }}
+                >
+                    <div className="absolute inset-0 bg-linear-to-t from-white via-white/20 to-transparent pointer-events-none" />
+                    <div className="relative z-10 flex flex-row items-center justify-between p-4">
+                        <Segmented
+                            value={selectedSegment}
+                            size="large"
+                            options={[
+                                { label: <MdDeliveryDining className="size-6 mt-1.25 mr-0.75" />, value: 'delivery' },
+                                { label: <MdHail className="size-6 mt-1.25 mr-0.75" />, value: 'receipent' },
+                            ]}
+                            onChange={(value) => setSelectedSegment(value as 'delivery' | 'receipent')}
+                            className="rounded-full!"
+                            style={{ background: secondaryColor }}
+                        />
+                        <div className="flex flex-row items-center gap-x-3">
+                            {selectedSegment === 'delivery' ? (
+                                <Button
+                                    style={{ background: secondaryColor, color: primaryColor }}
+                                    type="primary" shape="round"
+                                    icon={<MdShareLocation className="size-6 mt-1.25" />}
+                                    size="large"
+                                    onClick={() => setLocationModal(true)}
+                                >
+                                    <Text className="font-semibold!" style={{ color: primaryColor }}>
+                                        {t('selectLocation')}
+                                    </Text>
+                                </Button>
+                            ) : (
+                                <Button
+                                    style={{ background: secondaryColor, color: primaryColor }}
+                                    type="primary" shape="round"
+                                    icon={<MdStore className="size-6 mt-1.25" />}
+                                    size="large"
+                                    onClick={() => setBranchModal(true)}
+                                >
+                                    <Text className="font-semibold!" style={{ color: primaryColor }}>
+                                        {t('selectBranch')}
+                                    </Text>
+                                </Button>
+                            )}
+                            <Button
+                                style={{ background: secondaryColor, color: primaryColor }}
+                                type="primary" shape="circle"
+                                icon={<MdMenu className="size-6 mt-1 mr-0.5" />}
+                                size="large"
+                                onClick={() => setMenuDrawer(true)}
+                            />
+                        </div>
                     </div>
-                    <Button
-                        onClick={() => setCartOpen(true)}
-                        type="default"
-                        shape="circle"
-                        className="rounded-sm! h-10! w-10! border-0 shadow-sm"
-                        icon={<ShoppingOutlined />}
-                    />
-                </div>
-                <div className="relative -mx-4 lg:-mx-8 overflow-hidden lg:h-64 bg-gray-200">
-                    <Image
-                        src="https://media-files.tryordersystem.com/tenant/7gm/settings/68ecb43fb1622.png"
-                        alt="Store banner"
-                        fill
-                        sizes="100vw"
-                        className="object-cover"
-                        priority
-                    />
-                    <div className="relative flex h-32 items-end px-12 pb-3 lg:px-24">
-                        <div className="flex items-center gap-3">
-                            <div className="relative h-14 w-14 overflow-hidden rounded-full justify-center items-center bg-gray-300 shadow-sm ring-1 ring-gray-200">
-                                <Image
-                                    src="https://media-files.tryordersystem.com/tenant/7gm/settings/684ecd5d6b62e.png"
-                                    alt="Store logo"
-                                    fill
-                                    className="object-cover"
-                                />
+
+                    {/* Store Info Card */}
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-1/2 z-20 w-[calc(100%-2rem)]">
+                        <div className="bg-white rounded-2xl px-5 py-4 flex flex-row items-center gap-4 border border-gray-100 shadow-sm">
+                            <div
+                                className="relative shrink-0 size-16 lg:size-20 rounded-xl overflow-hidden border-2"
+                                style={{ borderColor: secondaryColor }}
+                            >
+                                <Image src={storeInfo.logo} alt="Restaurant logo" fill className="object-cover" />
                             </div>
-                            <div className="bg-black/30 px-3 py-1.5">
-                                <Typography.Title level={4} className="mb-0! text-white!">
-                                    {t('storeName')}
-                                </Typography.Title>
-                            </div>
-                            <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600">
-                                <span className="rounded-full bg-white px-3 py-1 shadow-sm">
-                                    <Typography.Text className="text-xs">{t('openNow')}</Typography.Text>
-                                </span>
+                            <div className="flex flex-col flex-1 min-w-0 gap-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <Text className="font-bold text-base! text-gray-900 truncate">
+                                        {storeInfo.name}
+                                    </Text>
+                                    <Text
+                                        className="text-xs! font-semibold px-2 py-0.5 rounded-full"
+                                        style={storeInfo.isOpen
+                                            ? { background: '#E6F9ED', color: '#1A8C3F' }
+                                            : { background: '#FEE2E2', color: '#DC2626' }
+                                        }
+                                    >
+                                        {storeInfo.isOpen ? t('statusOpen') : t('statusClosed')}
+                                    </Text>
+                                </div>
+                                <Text className="text-xs! text-gray-500 truncate">{storeInfo.categories}</Text>
+                                <div className="flex items-center gap-3 flex-wrap mt-0.5">
+                                    <div className="flex items-center gap-1">
+                                        <MdStar className="size-4" style={{ color: '#F5A623' }} />
+                                        <Text className="text-sm! font-semibold text-gray-800!">{storeInfo.rating}</Text>
+                                        <Text className="text-xs! text-gray-400">({storeInfo.reviewCount})</Text>
+                                    </div>
+                                    <Text className="text-gray-200!">|</Text>
+                                    <div className="flex items-center gap-1">
+                                        <MdAccessTime className="size-4 text-gray-400" />
+                                        <Text className="text-sm! text-gray-400!">{storeInfo.deliveryTime}</Text>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <Modal
-                title={t('modalTitle')}
-                centered
-                open={modalOpen}
-                onOk={() => setModalOpen(false)}
-                onCancel={() => setModalOpen(false)}
-                okText={t('modalOk')}
-                cancelText={t('modalCancel')}
-            >
-                <Tabs
-                    defaultActiveKey="delivery"
-                    items={[
-                        {
-                            key: 'delivery',
-                            label: <span className="px-2">{t('tabs.delivery')}</span>,
-                            children: (
-                                <div className="space-y-3 w-full">
-                                    <div className="border border-gray-200 overflow-hidden -mx-4 sm:-mx-6 -mt-2">
-                                        <APIProvider apiKey={apiKey}>
-                                            <Map
-                                                center={mapCenter}
-                                                zoom={13}
-                                                style={{ height: 260, width: '100%' }}
-                                                gestureHandling="greedy"
-                                                options={mapOptions}
-                                                onClick={(e) => {
-                                                    if (!e.detail?.latLng) return;
-                                                    const next = {
-                                                        lat: e.detail.latLng.lat,
-                                                        lng: e.detail.latLng.lng
-                                                    };
-                                                    setSelectedLocation(next);
-                                                }}
-                                            >
-                                                {selectedLocation && <Marker position={selectedLocation} />}
-                                            </Map>
-                                        </APIProvider>
-                                    </div>
-                                    <Button onClick={handleUseMyLocation} type="primary" className="w-full">
-                                        <Typography.Text className="text-white!">{t('useMyLocation')}</Typography.Text>
-                                    </Button>
-                                </div>
-                            )
-                        },
-                        {
-                            key: 'pickup',
-                            label: <span className="px-2">{t('tabs.pickup')}</span>,
-                            children: (
-                                <div className="space-y-3">
-                                    {branches.map((branch) => (
-                                        <button
-                                            key={branch.id}
-                                            type="button"
-                                            onClick={() => setSelectedBranch(branch.id)}
-                                            className={`w-full rounded-xs border px-4 py-3 text-left transition ${selectedBranch === branch.id
-                                                ? 'border-blue-600 bg-blue-50'
-                                                : 'border-gray-200 hover:bg-gray-50'
-                                                }`}
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <Typography.Text className="font-medium">{branch.name}</Typography.Text>
-                                                <Typography.Text className="text-xs text-gray-500">{branch.distance}</Typography.Text>
-                                            </div>
-                                            <Typography.Text className="mt-1 text-xs text-gray-500">{t('pickupEta')}</Typography.Text>
-                                        </button>
-                                    ))}
-                                </div>
-                            )
-                        }
-                    ]}
-                    onChange={() => { }}
-                />
-            </Modal>
-
+            {/* ── Sidebar Drawer ── */}
             <Drawer
-                title={t('menuTitle')}
-                closable
-                onClose={() => setMenuOpen(false)}
-                open={menuOpen}
-                placement="left"
+                title={t('drawerTitle')}
+                closable={{ 'aria-label': 'Close Button' }}
+                onClose={() => setMenuDrawer(false)}
+                open={menuDrawer}
+                placement={isArabic ? 'left' : 'right'}
             >
-                <div className="space-y-3">
-                    <Typography.Text className="font-medium">{t('menu.shawarma')}</Typography.Text>
-                    <Typography.Text className="text-sm text-gray-600">{t('menu.burgers')}</Typography.Text>
-                    <Typography.Text className="text-sm text-gray-600">{t('menu.grills')}</Typography.Text>
-                    <Typography.Text className="text-sm text-gray-600">{t('menu.sides')}</Typography.Text>
-                    <Typography.Text className="text-sm text-gray-600">{t('menu.drinks')}</Typography.Text>
+                <div className="flex flex-col h-full">
+                    <nav className="flex flex-col space-y-2 justify-end items-end w-full">
+                        {[
+                            { icon: <MdHome className="size-5" />, label: t('sidebarMenu.home') },
+                            { icon: <MdInfo className="size-5" />, label: t('sidebarMenu.about') },
+                            { icon: <MdPhone className="size-5" />, label: t('sidebarMenu.contact') },
+                        ].map(({ icon, label }) => (
+                            <Button
+                                key={label}
+                                type="text"
+                                icon={icon}
+                                className="flex items-center justify-start rounded-lg! hover:bg-gray-50"
+                                style={{ color: primaryColor }}
+                                onClick={() => setMenuDrawer(false)}
+                            >
+                                <span className="font-medium">{label}</span>
+                            </Button>
+                        ))}
+                    </nav>
+                    <Divider className="my-4" />
+                    <div className="mt-auto">
+                        <Button
+                            type="primary"
+                            icon={<MdLogin className="size-5" />}
+                            className="w-full h-12! rounded-full! font-semibold"
+                            style={{ background: primaryColor, color: secondaryColor, border: 'none' }}
+                            onClick={() => setMenuDrawer(false)}
+                        >
+                            {t('loginButton')}
+                        </Button>
+                    </div>
                 </div>
             </Drawer>
 
-            <Drawer
-                title={t('cartTitle')}
-                closable
-                onClose={() => setCartOpen(false)}
-                open={cartOpen}
-                placement="right"
+            {/* ── Location Modal ── */}
+            <Modal
+                title={t('selectYourLocation')}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                open={locationModal}
+                onOk={() => setLocationModal(false)}
+                onCancel={() => setLocationModal(false)}
+                styles={{ container: { borderRadius: '1rem', padding: 0 }, title: { padding: 15 } }}
+                footer={null}
             >
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <Typography.Text className="text-sm font-medium">{t('cart.item1')}</Typography.Text>
-                            <Typography.Text className="text-xs text-gray-500">{t('cart.item1Meta')}</Typography.Text>
-                        </div>
-                        <Typography.Text className="text-sm font-semibold">{t('cart.item1Price')}</Typography.Text>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <Typography.Text className="text-sm font-medium">{t('cart.item2')}</Typography.Text>
-                            <Typography.Text className="text-xs text-gray-500">{t('cart.item2Meta')}</Typography.Text>
-                        </div>
-                        <Typography.Text className="text-sm font-semibold">{t('cart.item2Price')}</Typography.Text>
-                    </div>
-                    <div className="border-t pt-3 flex items-center justify-between">
-                        <Typography.Text className="text-sm text-gray-600">{t('cart.total')}</Typography.Text>
-                        <Typography.Text className="text-base font-semibold">{t('cart.totalPrice')}</Typography.Text>
-                    </div>
-                    <Button type="primary" className="w-full h-10!">
-                        <Typography.Text className="text-white">{t('cart.checkout')}</Typography.Text>
+                <APIProvider apiKey={googleMapsApiKey}>
+                    <Map
+                        center={mapCenter}
+                        zoom={mapConfig.zoom ?? 13}
+                        style={{ height: 440, width: '100%' }}
+                        gestureHandling="greedy"
+                        options={mapOptions}
+                        onClick={(e) => {
+                            if (!e.detail?.latLng) return;
+                            setSelectedLocation({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });
+                        }}
+                    >
+                        {selectedLocation && <Marker position={selectedLocation} />}
+                    </Map>
+                </APIProvider>
+                <div className='flex flex-col space-y-4 mt-4 px-4 pb-4'>
+                    <Button onClick={handleUseMyLocation} type='primary' className='h-10! rounded-full!' style={{ background: primaryColor, color: secondaryColor }}>
+                        <Text className='text-white! font-semibold!'>{t('showMyLocation')}</Text>
+                    </Button>
+                    <Button onClick={handleConfirmLocation} type='default' className='h-10! rounded-full!' style={{ background: secondaryColor, color: primaryColor }}>
+                        <Text className='font-semibold!'>{t('selectLocation')}</Text>
                     </Button>
                 </div>
-            </Drawer>
-        </header>
+            </Modal>
+
+            {/* ── Branch Modal ── */}
+            <Modal
+                title={t('modalTitle')}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                open={branchModal}
+                onOk={() => setBranchModal(false)}
+                onCancel={() => setBranchModal(false)}
+                styles={{ container: { borderRadius: '1rem', padding: 15 }, title: { padding: 15 } }}
+                footer={null}
+            >
+                <Radio.Group
+                    className="w-full p-4"
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                >
+                    <div className="space-y-3">
+                        {branches.map((branch) => (
+                            <label
+                                key={branch.id}
+                                className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors"
+                            >
+                                <Radio value={branch.id} className="shrink-0" />
+                                <div className="flex flex-col flex-1 min-w-0 gap-0.5">
+                                    <Text className="font-semibold text-sm text-gray-900">{branch.name}</Text>
+                                    <Text className="text-xs text-gray-500">{branch.address} • {branch.status}</Text>
+                                </div>
+                            </label>
+                        ))}
+                    </div>
+                </Radio.Group>
+                <div className='mt-4 px-4 pb-4'>
+                    <Button
+                        type='primary'
+                        className='h-10! rounded-full! w-full!'
+                        style={{ background: primaryColor, color: secondaryColor }}
+                        disabled={!selectedBranch}
+                        onClick={handleConfirmBranch}
+                    >
+                        <Text className='text-white! font-semibold!'>{t('saveChanges')}</Text>
+                    </Button>
+                </div>
+            </Modal>
+
+            {/* ── Cart Modal ── */}
+            <Modal
+                title={tCart('cartTitle')}
+                closable={{ 'aria-label': 'Close Button' }}
+                open={cartModal}
+                onCancel={() => setCartModal(false)}
+                styles={{
+                    container: { borderRadius: '1rem', padding: 0 },
+                    title: { padding: 15 },
+                    body: { padding: 0, maxHeight: '70vh', overflowY: 'auto' }
+                }}
+                footer={null}
+            >
+                <div className="flex flex-col h-full">
+                    <div className="flex flex-col space-y-4 p-5">
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                            <h3 className="text-lg font-bold text-gray-900">{tCart('cartTitle')}</h3>
+                            <Text className="text-sm text-gray-500">{cartCount} {tCart('items')}</Text>
+                        </div>
+
+                        {cartItems.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-10 gap-2">
+                                <MdShoppingCart className="size-12 text-gray-200" />
+                                <Text className="text-gray-400 text-sm">{tCart('emptyCart')}</Text>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col space-y-3">
+                                {cartItems.map((item) => (
+                                    <div key={item.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                                        <div className="relative shrink-0 size-16 rounded-lg overflow-hidden bg-white">
+                                            <Image src={item.image} alt={item.name} fill className="object-cover" />
+                                        </div>
+                                        <div className="flex flex-col flex-1 min-w-0 gap-1">
+                                            <span className="font-semibold text-sm text-gray-900">{item.name}</span>
+                                            <Text className="text-xs text-gray-500">
+                                                {item.size ? `${item.size} • ` : ''}x{item.quantity}
+                                            </Text>
+                                            <Text className="text-sm font-bold" style={{ color: primaryColor }}>
+                                                SAR {(item.price * item.quantity).toFixed(2)}
+                                            </Text>
+                                        </div>
+                                        <button
+                                            onClick={() => onRemoveCartItem?.(item.id)}
+                                            className="shrink-0 size-6 rounded-full flex items-center justify-center text-white"
+                                            style={{ background: primaryColor }}
+                                            aria-label={tCart('removeItem')}
+                                        >
+                                            <MdClose className="size-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {cartItems.length > 0 && (
+                            <>
+                                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                    <div className="flex flex-col gap-1">
+                                        <Text className="text-sm text-gray-500">{tCart('subtotal')}</Text>
+                                        <Text className="text-lg font-bold text-gray-900">SAR {cartTotal.toFixed(2)}</Text>
+                                    </div>
+                                    <div className="flex flex-col gap-1 text-right">
+                                        <Text className="text-sm text-gray-500">{tCart('total')}</Text>
+                                        <Text className="text-xl font-bold" style={{ color: primaryColor }}>SAR {cartTotal.toFixed(2)}</Text>
+                                    </div>
+                                </div>
+                                <Button
+                                    type="primary"
+                                    className="w-full h-12! rounded-full! font-semibold!"
+                                    style={{ background: primaryColor, color: secondaryColor, border: 'none' }}
+                                    onClick={() => { onCheckout?.(cartItems); setCartModal(false); }}
+                                >
+                                    {tCart('checkout')}
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </Modal>
+        </ConfigProvider>
     );
 }

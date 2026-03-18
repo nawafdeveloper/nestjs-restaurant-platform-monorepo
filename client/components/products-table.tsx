@@ -1,64 +1,72 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Button, Card, ConfigProvider, Form, Input, Modal, Select, Space, Table, Tag, Typography, Upload } from 'antd';
+import { Button, ConfigProvider, Empty, Form, Input, Modal, Select, Skeleton, Space, Switch, Table, Tag, Typography, Upload } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { useLocale, useTranslations } from 'next-intl';
 import Text from 'antd/es/typography/Text';
+import { useProducts } from '@/hooks/use-products';
+import type { Product } from '@/types';
 
 type ProductRow = {
     key: string;
+    id: string;
     name: string;
-    nameAr: string;
-    category: string;
-    basePrice: string;
+    nameAr: string | null;
+    categoryId: string;
+    categoryName: string;
+    basePrice: number;
     sortOrder: number;
-    imageUrl: string;
-    status: 'Active' | 'Inactive';
-    availability: 'Available' | 'Unavailable';
+    imageUrl: string | null;
+    isActive: boolean;
+    isAvailable: boolean;
 };
 
-const initialData: ProductRow[] = [
-    {
-        key: '1',
-        name: 'Chicken Shawarma',
-        nameAr: 'شاورما دجاج',
-        category: 'Shawarma',
-        basePrice: '12.00',
-        sortOrder: 1,
-        imageUrl: 'https://placehold.co/80x80',
-        status: 'Active',
-        availability: 'Available'
-    },
-    {
-        key: '2',
-        name: 'Beef Burger',
-        nameAr: 'برجر لحم',
-        category: 'Burgers',
-        basePrice: '22.00',
-        sortOrder: 2,
-        imageUrl: 'https://placehold.co/80x80',
-        status: 'Inactive',
-        availability: 'Unavailable'
-    }
-];
+function mapToRow(product: Product, categoryName: string): ProductRow {
+    return {
+        key: product.id,
+        id: product.id,
+        name: product.name,
+        nameAr: product.nameAr,
+        categoryId: product.categoryId,
+        categoryName,
+        basePrice: product.basePrice,
+        sortOrder: product.sortOrder,
+        imageUrl: product.imageUrl,
+        isActive: product.isActive,
+        isAvailable: product.isAvailable,
+    };
+}
 
 export default function ProductsTable() {
     const t = useTranslations('Products');
     const locale = useLocale();
     const direction = locale === 'ar' ? 'rtl' : 'ltr';
-    const categoryOptions = [
-        { value: 'Shawarma', label: t('categoryShawarma') },
-        { value: 'Burgers', label: t('categoryBurgers') }
-    ];
-    const [rows, setRows] = useState<ProductRow[]>(initialData);
+
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<ProductRow | null>(null);
     const [form] = Form.useForm();
     const [addForm] = Form.useForm();
+
+    const {
+        contextHolder,
+        fetchLoading,
+        saveLoading,
+        data,
+        categories,
+        handleCreate,
+        handleUpdate,
+        handleDelete: deleteProduct,
+        handleToggleActive,
+        handleToggleAvailable,
+    } = useProducts();
+
+    const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c.name]));
+    const categoryOptions = categories.map((c) => ({ value: c.id, label: locale === 'ar' ? (c.nameAr ?? c.name) : c.name }));
+    const rows: ProductRow[] = data.map((p) => mapToRow(p, categoryMap[p.categoryId] ?? '—'));
 
     const openDelete = (record: ProductRow) => {
         setSelectedProduct(record);
@@ -70,9 +78,10 @@ export default function ProductsTable() {
         form.setFieldsValue({
             name: record.name,
             nameAr: record.nameAr,
-            category: record.category,
+            categoryId: record.categoryId,
             basePrice: record.basePrice,
-            sortOrder: record.sortOrder
+            sortOrder: record.sortOrder,
+            imageFile: [],
         });
         setIsEditOpen(true);
     };
@@ -81,25 +90,23 @@ export default function ProductsTable() {
     const closeEdit = () => setIsEditOpen(false);
     const closeAdd = () => setIsAddOpen(false);
 
-    const handleDelete = () => {
-        if (selectedProduct) {
-            setRows((prev) => prev.filter((row) => row.key !== selectedProduct.key));
-        }
-        closeDelete();
+    const handleDelete = async () => {
+        if (!selectedProduct) return;
+        const ok = await deleteProduct(selectedProduct.id);
+        if (ok) closeDelete();
     };
 
-    const handleSave = () => {
-        if (selectedProduct) {
-            const values = form.getFieldsValue();
-            setRows((prev) =>
-                prev.map((row) =>
-                    row.key === selectedProduct.key
-                        ? { ...row, ...values }
-                        : row
-                )
-            );
-        }
-        closeEdit();
+    const handleSave = async () => {
+        if (!selectedProduct) return;
+        const values = form.getFieldsValue();
+        const ok = await handleUpdate(selectedProduct.id, {
+            name: values.name,
+            nameAr: values.nameAr,
+            categoryId: values.categoryId,
+            basePrice: values.basePrice ? Number(values.basePrice) : undefined,
+            sortOrder: values.sortOrder ? Number(values.sortOrder) : undefined,
+        });
+        if (ok) closeEdit();
     };
 
     const openAdd = () => {
@@ -107,59 +114,85 @@ export default function ProductsTable() {
         setIsAddOpen(true);
     };
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
         const values = addForm.getFieldsValue();
-        const nextKey = String(Date.now());
-        setRows((prev) => [
-            ...prev,
-            {
-                key: nextKey,
-                name: values.name,
-                nameAr: values.nameAr,
-                category: values.category,
-                basePrice: values.basePrice || '0.00',
-                sortOrder: values.sortOrder || 0,
-                imageUrl: 'https://placehold.co/80x80',
-                status: 'Active',
-                availability: 'Available'
-            }
-        ]);
-        closeAdd();
+        const ok = await handleCreate({
+            categoryId: values.categoryId,
+            name: values.name,
+            nameAr: values.nameAr,
+            basePrice: Number(values.basePrice),
+            sortOrder: values.sortOrder ? Number(values.sortOrder) : undefined,
+        });
+        if (ok) closeAdd();
     };
 
     const headerCellStyle = { backgroundColor: '#F6F9FC' };
+
     const baseColumns: ColumnsType<ProductRow> = [
-        { title: t('name'), dataIndex: 'name', key: 'name' },
-        { title: t('nameAr'), dataIndex: 'nameAr', key: 'nameAr' },
-        { title: t('category'), dataIndex: 'category', key: 'category' },
-        { title: t('basePrice'), dataIndex: 'basePrice', key: 'basePrice' },
-        { title: t('sortOrder'), dataIndex: 'sortOrder', key: 'sortOrder' },
         {
             title: t('image'),
             dataIndex: 'imageUrl',
             key: 'imageUrl',
-            render: (url: string) => (
-                <img src={url} alt={t('imageAlt')} className="h-10 w-10 rounded object-cover" />
-            )
+            render: (value: string | null) =>
+                value
+                    ? <img src={value} alt="" className="w-10 h-10 rounded object-cover" />
+                    : '—'
         },
+        { title: t('name'), dataIndex: 'name', key: 'name' },
+        {
+            title: t('nameAr'),
+            dataIndex: 'nameAr',
+            key: 'nameAr',
+            render: (value: string | null) => value ?? '—'
+        },
+        { title: t('category'), dataIndex: 'categoryName', key: 'categoryName' },
+        {
+            title: t('basePrice'),
+            dataIndex: 'basePrice',
+            key: 'basePrice',
+            render: (value: number) => `${Number(value).toFixed(2)} SAR`
+        },
+        { title: t('sortOrder'), dataIndex: 'sortOrder', key: 'sortOrder' },
         {
             title: t('status'),
-            dataIndex: 'status',
-            key: 'status',
-            render: (value: ProductRow['status']) => (
-                <Tag color={value === 'Active' ? 'green' : 'default'}>
-                    {value === 'Active' ? t('active') : t('inactive')}
+            dataIndex: 'isActive',
+            key: 'isActive',
+            render: (value: boolean) => (
+                <Tag color={value ? 'green' : 'default'}>
+                    {value ? t('active') : t('inactive')}
                 </Tag>
             )
         },
         {
             title: t('availability'),
-            dataIndex: 'availability',
-            key: 'availability',
-            render: (value: ProductRow['availability']) => (
-                <Tag color={value === 'Available' ? 'blue' : 'default'}>
-                    {value === 'Available' ? t('available') : t('unavailable')}
+            dataIndex: 'isAvailable',
+            key: 'isAvailable',
+            render: (value: boolean) => (
+                <Tag color={value ? 'blue' : 'default'}>
+                    {value ? t('available') : t('unavailable')}
                 </Tag>
+            )
+        },
+        {
+            title: t('toggleActive'),
+            key: 'toggleActive',
+            render: (_, record) => (
+                <Switch
+                    checked={record.isActive}
+                    loading={saveLoading}
+                    onChange={(checked) => handleToggleActive(record.id, checked)}
+                />
+            )
+        },
+        {
+            title: t('toggleAvailable'),
+            key: 'toggleAvailable',
+            render: (_, record) => (
+                <Switch
+                    checked={record.isAvailable}
+                    loading={saveLoading}
+                    onChange={(checked) => handleToggleAvailable(record.id, checked)}
+                />
             )
         },
         {
@@ -177,13 +210,17 @@ export default function ProductsTable() {
             )
         }
     ];
+
     const columns: ColumnsType<ProductRow> = baseColumns.map((column) => ({
         ...column,
         onHeaderCell: () => ({ style: headerCellStyle })
     }));
 
+    if (fetchLoading) return <Skeleton active paragraph={{ rows: 8 }} />;
+
     return (
         <ConfigProvider direction={direction}>
+            {contextHolder}
             <div dir={direction} className="space-y-4">
                 <div className="flex items-center justify-between">
                     <div>
@@ -206,7 +243,37 @@ export default function ProductsTable() {
                         </div>
                     </Button>
                 </div>
-                <Table columns={columns} dataSource={rows} pagination={false} />
+
+                {rows.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center border border-gray-200 rounded-lg py-16">
+                        <Empty
+                            description={
+                                <Typography.Text className="text-gray-400">
+                                    {t('emptyState')}
+                                </Typography.Text>
+                            }
+                        />
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            className="mt-4 h-10! border-0!"
+                            style={{ backgroundColor: '#13B272' }}
+                            onClick={openAdd}
+                        >
+                            {t('addProduct')}
+                        </Button>
+                    </div>
+                ) : (
+                    <Table
+                        className='border! border-gray-200'
+                        columns={columns}
+                        dataSource={rows}
+                        pagination={false}
+                        scroll={{ x: true }}
+                    />
+                )}
+
+                {/* Delete Modal */}
                 <Modal
                     title={t('deleteTitle')}
                     open={isDeleteOpen}
@@ -214,18 +281,18 @@ export default function ProductsTable() {
                     onOk={handleDelete}
                     okText={t('deleteOk')}
                     cancelText={t('deleteCancel')}
-                    okButtonProps={{
-                        className: 'bg-[#ff4d4f]! h-10! border-0!'
-                    }}
-                    cancelButtonProps={{
-                        className: 'h-10! bg-[#D9E5F1]! border-0!'
-                    }}
+                    confirmLoading={saveLoading}
+                    okButtonProps={{ className: 'bg-[#ff4d4f]! h-10! border-0!' }}
+                    cancelButtonProps={{ className: 'h-10! bg-[#D9E5F1]! border-0!', disabled: saveLoading }}
                 >
                     <Typography.Text>
-                        {selectedProduct ? t('deleteConfirmWithName', { name: selectedProduct.name }) : t('deleteConfirm')}
+                        {selectedProduct
+                            ? t('deleteConfirmWithName', { name: selectedProduct.name })
+                            : t('deleteConfirm')}
                     </Typography.Text>
                 </Modal>
 
+                {/* Edit Modal */}
                 <Modal
                     title={t('editProduct')}
                     open={isEditOpen}
@@ -233,12 +300,9 @@ export default function ProductsTable() {
                     onOk={handleSave}
                     okText={t('save')}
                     cancelText={t('cancel')}
-                    okButtonProps={{
-                        className: 'bg-[#119F65]! h-10! border-0!'
-                    }}
-                    cancelButtonProps={{
-                        className: 'h-10! bg-[#D9E5F1]! border-0!'
-                    }}
+                    confirmLoading={saveLoading}
+                    okButtonProps={{ className: 'bg-[#119F65]! h-10! border-0!' }}
+                    cancelButtonProps={{ className: 'h-10! bg-[#D9E5F1]! border-0!', disabled: saveLoading }}
                 >
                     <Form layout="vertical" form={form}>
                         <Form.Item label={t('name')} name="name">
@@ -247,19 +311,22 @@ export default function ProductsTable() {
                         <Form.Item label={t('nameAr')} name="nameAr">
                             <Input className="h-10" />
                         </Form.Item>
-                        <Form.Item label={t('category')} name="category">
+                        <Form.Item label={t('category')} name="categoryId">
                             <Select options={categoryOptions} className='h-10!' />
                         </Form.Item>
                         <Form.Item label={t('basePrice')} name="basePrice">
                             <Space.Compact className='w-full'>
-                                <Input className="h-10" />
+                                <Input className="h-10" type="number" />
                                 <Space.Addon>SAR</Space.Addon>
                             </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('sortOrder')} name="sortOrder">
                             <Input className="h-10" type="number" />
                         </Form.Item>
-                        <Form.Item label={t('image')} name="imageFile" valuePropName="fileList"
+                        <Form.Item
+                            label={t('image')}
+                            name="imageFile"
+                            valuePropName="fileList"
                             getValueFromEvent={(e) => (Array.isArray(e?.fileList) ? e.fileList : [])}
                         >
                             <Upload beforeUpload={() => false} maxCount={1} showUploadList>
@@ -269,6 +336,7 @@ export default function ProductsTable() {
                     </Form>
                 </Modal>
 
+                {/* Add Modal */}
                 <Modal
                     title={t('addProduct')}
                     open={isAddOpen}
@@ -276,12 +344,9 @@ export default function ProductsTable() {
                     onOk={handleAdd}
                     okText={t('save')}
                     cancelText={t('cancel')}
-                    okButtonProps={{
-                        className: 'bg-[#119F65]! h-10! border-0!'
-                    }}
-                    cancelButtonProps={{
-                        className: 'h-10! bg-[#D9E5F1]! border-0!'
-                    }}
+                    confirmLoading={saveLoading}
+                    okButtonProps={{ className: 'bg-[#119F65]! h-10! border-0!' }}
+                    cancelButtonProps={{ className: 'h-10! bg-[#D9E5F1]! border-0!', disabled: saveLoading }}
                 >
                     <Form layout="vertical" form={addForm}>
                         <Form.Item label={t('name')} name="name" rules={[{ required: true }]}>
@@ -290,19 +355,22 @@ export default function ProductsTable() {
                         <Form.Item label={t('nameAr')} name="nameAr">
                             <Input className="h-10" />
                         </Form.Item>
-                        <Form.Item label={t('category')} name="category">
+                        <Form.Item label={t('category')} name="categoryId" rules={[{ required: true }]}>
                             <Select options={categoryOptions} className='h-10!' />
                         </Form.Item>
-                        <Form.Item label={t('basePrice')} name="basePrice">
+                        <Form.Item label={t('basePrice')} name="basePrice" rules={[{ required: true }]}>
                             <Space.Compact className='w-full'>
-                                <Input className="h-10" />
+                                <Input className="h-10" type="number" />
                                 <Space.Addon>SAR</Space.Addon>
                             </Space.Compact>
                         </Form.Item>
                         <Form.Item label={t('sortOrder')} name="sortOrder">
                             <Input className="h-10" type="number" />
                         </Form.Item>
-                        <Form.Item label={t('image')} name="imageFile" valuePropName="fileList"
+                        <Form.Item
+                            label={t('image')}
+                            name="imageFile"
+                            valuePropName="fileList"
                             getValueFromEvent={(e) => (Array.isArray(e?.fileList) ? e.fileList : [])}
                         >
                             <Upload beforeUpload={() => false} maxCount={1} showUploadList>

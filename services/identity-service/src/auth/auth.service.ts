@@ -10,6 +10,9 @@ import { MerchantRegisterDto } from './dto/merchant-register.dto';
 import { MerchantLoginDto } from './dto/merchant-login.dto';
 import { CustomerSendOtpDto, CustomerVerifyOtpDto } from './dto/customer-auth.dto';
 import { CustomerStoreSession } from './entities/customer-store-session.entity';
+import { UpdateMerchantProfileDto } from './dto/update-merchant-profile.dto';
+import { UpdateMerchantPasswordDto } from './dto/update-merchant-password.dto';
+import { UpdateMerchantOnboardingDto } from './dto/update-merchant-onboarding.dto';
 
 @Injectable()
 export class AuthService {
@@ -27,8 +30,8 @@ export class AuthService {
     // ── Merchant ──────────────────────────────────────
 
     async merchantRegister(dto: MerchantRegisterDto) {
-        const exists = await this.merchantRepo.findOne({ where: { phone: dto.phone } });
-        if (exists) throw new ConflictException('Phone already registered');
+        const exists = await this.merchantRepo.findOne({ where: { email: dto.email } });
+        if (exists) throw new ConflictException('Email already taken');
 
         const passwordHash = await bcrypt.hash(dto.password, 10);
         const merchant = await this.merchantRepo.save({ ...dto, passwordHash });
@@ -37,7 +40,7 @@ export class AuthService {
     }
 
     async merchantLogin(dto: MerchantLoginDto) {
-        const merchant = await this.merchantRepo.findOne({ where: { phone: dto.phone } });
+        const merchant = await this.merchantRepo.findOne({ where: { email: dto.email } });
         if (!merchant) throw new UnauthorizedException('Invalid credentials');
 
         const valid = await bcrypt.compare(dto.password, merchant.passwordHash);
@@ -50,8 +53,54 @@ export class AuthService {
         const payload = { sub: merchant.id, phone: merchant.phone, role: 'merchant' };
         return {
             accessToken: this.jwtService.sign(payload),
-            merchant: { id: merchant.id, name: merchant.name, phone: merchant.phone },
+            merchant: {
+                id: merchant.id,
+                name: merchant.name,
+                phone: merchant.phone,
+                email: merchant.email,
+                isActive: merchant.isActive,
+                isOnboarded: merchant.isOnboarded
+            },
         };
+    }
+
+    async updateMerchantProfile(merchantId: string, dto: UpdateMerchantProfileDto) {
+        const merchant = await this.merchantRepo.findOne({ where: { id: merchantId } });
+        if (!merchant) throw new UnauthorizedException('Merchant not found');
+
+        if (dto.email && dto.email !== merchant.email) {
+            const exists = await this.merchantRepo.findOne({ where: { email: dto.email } });
+            if (exists) throw new ConflictException('Email already taken');
+        }
+
+        await this.merchantRepo.update(merchantId, { ...dto });
+        const updated = await this.merchantRepo.findOne({ where: { id: merchantId } });
+        return this.signMerchant(updated!);
+    }
+
+    async updateMerchantPassword(merchantId: string, dto: UpdateMerchantPasswordDto) {
+        const merchant = await this.merchantRepo.findOne({ where: { id: merchantId } });
+        if (!merchant) throw new UnauthorizedException('Merchant not found');
+
+        const valid = await bcrypt.compare(dto.currentPassword, merchant.passwordHash);
+        if (!valid) throw new UnauthorizedException('Current password is incorrect');
+
+        const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+        await this.merchantRepo.update(merchantId, { passwordHash });
+
+        return { message: 'Password updated successfully' };
+    }
+
+    async updateMerchantOnboarding(merchantId: string, dto: UpdateMerchantOnboardingDto) {
+        console.log('merchantId:', merchantId);
+
+        if (!merchantId) throw new UnauthorizedException('Merchant ID is missing');
+        const merchant = await this.merchantRepo.findOne({ where: { id: merchantId } });
+        if (!merchant) throw new UnauthorizedException('Merchant not found');
+
+        await this.merchantRepo.update(merchantId, { isOnboarded: dto.isOnboarded });
+        const updated = await this.merchantRepo.findOne({ where: { id: merchantId } });
+        return this.signMerchant(updated!);
     }
 
     // ── Customer ──────────────────────────────────────

@@ -11,7 +11,8 @@
         "dev:order": "pnpm --filter order-service start:dev",
         "dev:customer": "pnpm --filter customer-service start:dev",
         "dev:notification": "pnpm --filter notification-service start:dev",
-        "dev": "concurrently \"pnpm dev:gateway\" \"pnpm dev:identity\" \"pnpm dev:store\" \"pnpm dev:catalog\" \"pnpm dev:promotion\" \"pnpm dev:order\" \"pnpm dev:customer\" \"pnpm dev:notification\""
+        "dev:client": "pnpm --filter client dev",
+        "dev": "concurrently \"pnpm dev:client\" \"pnpm dev:gateway\" \"pnpm dev:identity\" \"pnpm dev:store\" \"pnpm dev:catalog\" \"pnpm dev:promotion\" \"pnpm dev:order\" \"pnpm dev:customer\" \"pnpm dev:notification\""
     },
     "devDependencies": {
         "typescript": "^5.0.0",

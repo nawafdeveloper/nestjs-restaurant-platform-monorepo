@@ -1,25 +1,16 @@
 "use client";
 
 import React from 'react';
-import { Button, Card, ConfigProvider, Form, Input, Switch, Tabs, Tag, Typography } from 'antd';
+import { Button, Card, ConfigProvider, Form, Input, Tabs, Typography } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import Text from 'antd/es/typography/Text';
 import { SaveOutlined } from '@ant-design/icons';
-
-type SessionItem = {
-    id: string;
-    device: string;
-    ip: string;
-    createdAt: string;
-    isActive: boolean;
-};
-
-const sessions: SessionItem[] = [
-    { id: '1', device: 'Chrome / Windows', ip: '188.45.22.11', createdAt: '2026-03-12 18:20', isActive: true },
-    { id: '2', device: 'Safari / iPhone', ip: '82.18.3.90', createdAt: '2026-03-10 09:15', isActive: false }
-];
+import { useMerchant } from '@/hooks/use-merchant';
 
 export default function AccountSecurityTabs() {
+    const { getMerchant } = useMerchant();
+    const merchant = getMerchant();
+
     const t = useTranslations('AccountSecurity');
     const locale = useLocale();
     const direction = locale === 'ar' ? 'rtl' : 'ltr';
@@ -34,10 +25,10 @@ export default function AccountSecurityTabs() {
                 <Form
                     layout="vertical"
                     initialValues={{
-                        name: 'Nawaf Store',
-                        email: 'owner@store.com',
-                        phone: '512345678',
-                        isActive: true
+                        name: merchant?.name ?? '',
+                        email: merchant?.email ?? '',
+                        phone: merchant?.phone ?? '',
+                        isActive: merchant?.isActive ?? ''
                     }}
                 >
                     <Form.Item label={t('name')} name="name">

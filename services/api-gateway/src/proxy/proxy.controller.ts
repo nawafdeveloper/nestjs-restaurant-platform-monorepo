@@ -55,6 +55,27 @@ export class ProxyController {
     }
 
     // ── موجهات التاجر تحتاج مصادقة التاجر ──────────────────────────────
+    @ApiOperation({ summary: 'Proxy merchant profile update' })
+    @All('api/v1/auth/merchant/profile')
+    @UseGuards(JwtAuthGuard, MerchantGuard)
+    merchantProfileUpdate(@Req() req: Request) {
+        return this.proxyService.forward('identity', req);
+    }
+
+    @ApiOperation({ summary: 'Proxy merchant password update' })
+    @All('api/v1/auth/merchant/password')
+    @UseGuards(JwtAuthGuard, MerchantGuard)
+    merchantPasswordUpdate(@Req() req: Request) {
+        return this.proxyService.forward('identity', req);
+    }
+
+    @ApiOperation({ summary: 'Proxy merchant onboarding update' })
+    @All('api/v1/auth/merchant/onboarding')
+    @UseGuards(JwtAuthGuard, MerchantGuard)
+    merchantOnboardingUpdate(@Req() req: Request) {
+        return this.proxyService.forward('identity', req);
+    }
+
     @ApiOperation({ summary: 'Proxy merchant category routes (wildcard)' })
     @All('api/v1/stores/:storeId/categories/*path')
     @UseGuards(JwtAuthGuard, MerchantGuard)
@@ -122,6 +143,20 @@ export class ProxyController {
     @All('api/v1/stores/:storeId/appearance')
     @UseGuards(JwtAuthGuard, MerchantGuard)
     merchantAppearanceRoutesBase(@Req() req: Request) {
+        return this.proxyService.forward('store', req);
+    }
+
+    @ApiOperation({ summary: 'Proxy merchant branch routes (base)' })
+    @All('api/v1/stores/:storeId/branches')
+    @UseGuards(JwtAuthGuard, MerchantGuard)
+    merchantBranchesBase(@Req() req: Request) {
+        return this.proxyService.forward('store', req);
+    }
+
+    @ApiOperation({ summary: 'Proxy merchant branch routes (wildcard)' })
+    @All('api/v1/stores/:storeId/branches/*path')
+    @UseGuards(JwtAuthGuard, MerchantGuard)
+    merchantBranchesRoutes(@Req() req: Request) {
         return this.proxyService.forward('store', req);
     }
 

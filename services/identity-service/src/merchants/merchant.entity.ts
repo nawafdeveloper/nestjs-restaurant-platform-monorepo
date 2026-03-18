@@ -26,6 +26,9 @@ export class Merchant {
     @Column({ default: true })
     isActive: boolean;
 
+    @Column({default: false})
+    isOnboarded: boolean;
+
     @CreateDateColumn()
     createdAt: Date;
 

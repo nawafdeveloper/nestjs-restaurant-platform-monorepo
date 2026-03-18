@@ -7,8 +7,14 @@
         "forgetPass": "Forget password?",
         "resetPass": "Reset password now",
         "loginButton": "Login now",
+        "loginButtonLoading": "Logging in...",
         "dontHaveAccount": "Don't have account yet?",
-        "signupNow": "Create account"
+        "signupNow": "Create account",
+        "loginErrorTitle": "Login Failed",
+        "loginErrorDescription": "Something went wrong, please try again",
+        "loginSuccessTitle": "Welcome Back",
+        "loginSuccessDescription": "You have logged in successfully",
+        "invalidCredentials": "Invalid email or password"
     },
     "SignupForm": {
         "title": "Create your account",
@@ -20,7 +26,13 @@
         "phoneHint": "Saudi number only, 9 digits",
         "signupButton": "Create account",
         "alreadyHaveAccount": "Already have an account?",
-        "loginNow": "Login now"
+        "loginNow": "Login now",
+        "signupErrorTitle": "Signup Failed",
+        "signupErrorDescription": "Something went wrong, please try again",
+        "signupSuccessTitle": "Account Created",
+        "signupSuccessDescription": "Your account has been created successfully",
+        "emailTaken": "This email is already registered",
+        "signupButtonLoading": "Signing up..."
     },
     "AuthHero": {
         "title": "Everything you need to manage your business in one software!",
@@ -71,6 +83,11 @@
         "settings": "Settings",
         "accountSecurity": "Account & security"
     },
+    "AppHeader": {
+        "accountSecurity": "Account & security",
+        "signout": "Signout",
+        "signoutLoading": "Signing out..."
+    },
     "Onboarding": {
         "stepStoreInfo": "Store information",
         "stepFirstBranch": "First branch",
@@ -102,7 +119,18 @@
         "typeShawarma": "Shawarma",
         "typeBurger": "Burger",
         "typePizza": "Pizza",
-        "typeCafe": "Cafe"
+        "typeCafe": "Cafe",
+        "storeNameAr": "Store name in Arabic",
+        "storeNameEn": "Store name in English",
+        "slug": "Store identifier (e.g. my-store)",
+        "descriptionAr": "Store description in Arabic",
+        "descriptionEn": "Store description in English",
+        "creatingStoreLoading": "Preparing your store...",
+        "slugTaken": "This store identifier is already taken",
+        "onboardingError": "Something went wrong, please try again",
+        "errorTitle": "Error",
+        "branchLocation": "Branch location",
+        "locationDenied": "Location access denied. Please click on the map to set your branch location manually."
     },
     "Overview": {
         "statsTotalOrders": "Total Orders",
@@ -143,7 +171,13 @@
         "active": "Active",
         "inactive": "Inactive",
         "cancel": "Cancel",
-        "save": "Save changes"
+        "save": "Save changes",
+        "errorTitle": "Error",
+        "fetchError": "Failed to load store data",
+        "saveError": "Failed to save changes",
+        "saveSuccess": "Store updated successfully",
+        "successTitle": "Success",
+        "slugTaken": "This store identifier is already taken"
     },
     "Branches": {
         "title": "Branches",
@@ -167,7 +201,15 @@
         "deleteCancel": "Cancel",
         "editBranch": "Edit branch",
         "save": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "nameAr": "Branch name (Arabic)",
+        "successTitle": "Success",
+        "createSuccess": "Branch created successfully",
+        "errorTitle": "Something went wrong",
+        "fetchError": "Failed to load branches, please try again",
+        "updateSuccess": "Branch updated successfully",
+        "deleteSuccess": "Branch deleted successfully",
+        "deleteError": "Failed to delete branch, please try again"
     },
     "WorkingHours": {
         "title": "Working hours",
@@ -185,7 +227,13 @@
             "thursday": "Thursday",
             "friday": "Friday",
             "saturday": "Saturday"
-        }
+        },
+        "errorTitle": "Something went wrong",
+        "fetchError": "Failed to load working hours, please try again",
+        "saveError": "Failed to save working hours, please try again",
+        "successTitle": "Success",
+        "saveSuccess": "Working hours saved successfully",
+        "save": "Save"
     },
     "StoreTheme": {
         "title": "Store theme",
@@ -199,7 +247,12 @@
         "layoutCentered": "Centered",
         "layoutGrid": "Grid focus",
         "cancel": "Cancel",
-        "save": "Save changes"
+        "save": "Save changes",
+        "errorTitle": "Something went wrong",
+        "fetchError": "Failed to load appearance settings, please try again",
+        "saveError": "Failed to save appearance settings, please try again",
+        "successTitle": "Success",
+        "saveSuccess": "Appearance settings saved successfully"
     },
     "Categories": {
         "title": "Categories",
@@ -225,7 +278,17 @@
         "deleteCancel": "Cancel",
         "editCategory": "Edit category",
         "save": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "errorTitle": "Something went wrong",
+        "fetchError": "Failed to load categories, please try again",
+        "createError": "Failed to create category, please try again",
+        "updateError": "Failed to update category, please try again",
+        "deleteError": "Failed to delete category, please try again",
+        "successTitle": "Success",
+        "createSuccess": "Category created successfully",
+        "updateSuccess": "Category updated successfully",
+        "deleteSuccess": "Category deleted successfully",
+        "emptyState": "No categories yet"
     },
     "Products": {
         "title": "Products",
@@ -257,7 +320,19 @@
         "deleteCancel": "Cancel",
         "editProduct": "Edit product",
         "save": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "errorTitle": "Something went wrong",
+        "fetchError": "Failed to load products, please try again",
+        "createError": "Failed to create product, please try again",
+        "updateError": "Failed to update product, please try again",
+        "deleteError": "Failed to delete product, please try again",
+        "successTitle": "Success",
+        "createSuccess": "Product created successfully",
+        "updateSuccess": "Product updated successfully",
+        "deleteSuccess": "Product deleted successfully",
+        "emptyState": "No products yet",
+        "toggleActive": "Active",
+        "toggleAvailable": "Available"
     },
     "Variants": {
         "title": "Variants",
@@ -472,10 +547,24 @@
         "bannerPlaceholder": "Banner placeholder",
         "logoPlaceholder": "Logo placeholder",
         "modalTitle": "Select branch",
+        "saveChanges": "Save changes",
         "modalOk": "Save",
         "modalCancel": "Cancel",
         "useMyLocation": "Use my location",
         "selectLocation": "Select location",
+        "selectBranch": "Select branch",
+        "drawerTitle": "Store menu",
+        "sidebarMenu": {
+            "home": "Home",
+            "menu": "Menu",
+            "categories": "Categories",
+            "about": "About",
+            "contact": "Contact"
+        },
+        "loginButton": "Login",
+        "statusOpen": "Open",
+        "showMyLocation": "Show my location",
+        "selectYourLocation": "Select your location",
         "tabs": {
             "delivery": "Delivery",
             "pickup": "Pickup"
@@ -508,5 +597,65 @@
             "totalPrice": "SAR 48.5",
             "checkout": "Checkout"
         }
+    },
+    "FoodMenu": {
+        "menuTitle": "Our Menu",
+        "options": "Add extras",
+        "quantity": "Quantity",
+        "total": "Total",
+        "addToCart": "Add to Cart",
+        "itemAdded": "{name} magically added to cart!",
+        "magicHint": "Every addition comes with a sprinkle of magic ✨",
+        "required": "Required",
+        "currency": "SAR",
+        "close": "Close",
+        "addToCartAria": "Add {name}",
+        "decreaseQuantityAria": "Decrease quantity",
+        "increaseQuantityAria": "Increase quantity"
+    },
+    "CartModal": {
+        "cartTitle": "Cart",
+        "items": "items",
+        "subtotal": "Subtotal",
+        "total": "Total",
+        "checkout": "Checkout",
+        "removeItem": "Remove item",
+        "chickenShawarma": "Chicken Shawarma",
+        "large": "Large",
+        "friesCombo": "Fries Combo",
+        "regular": "Regular",
+        "emptyCart": "Your cart is empty"
+    },
+    "Checkout": {
+        "title": "Checkout",
+        "back": "Go back",
+        "items": "items",
+        "orderSummary": "Order Summary",
+        "deliveryDetails": "Delivery Details",
+        "pickupDetails": "Pickup Details",
+        "deliveryAddress": "Delivery Address",
+        "branch": "Pickup Branch",
+        "noLocationSelected": "No location selected",
+        "noBranchSelected": "No branch selected",
+        "orderNotes": "Order Notes",
+        "notesPlaceholder": "Any special requests? (optional)",
+        "paymentMethod": "Payment Method",
+        "paymentCash": "Cash on Delivery",
+        "paymentCashDesc": "Pay when you receive your order",
+        "paymentCard": "Credit / Debit Card",
+        "paymentCardDesc": "Visa, Mastercard, Mada",
+        "paymentApplePay": "Apple Pay",
+        "paymentApplePayDesc": "Pay with Face ID or Touch ID",
+        "promoCode": "Promo Code",
+        "promoPlaceholder": "Enter code",
+        "apply": "Apply",
+        "applied": "Applied ✓",
+        "promoSaved": "You saved SAR {amount}",
+        "subtotal": "Subtotal",
+        "deliveryFee": "Delivery Fee",
+        "free": "Free",
+        "discount": "Discount",
+        "total": "Total",
+        "placeOrder": "Place Order"
     }
 }

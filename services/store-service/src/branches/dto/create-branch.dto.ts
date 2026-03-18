@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateBranchDto {
     @IsString()
@@ -27,4 +27,8 @@ export class CreateBranchDto {
     @IsString()
     @IsOptional()
     phone?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    isActive?: boolean;
 }

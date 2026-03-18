@@ -2,7 +2,7 @@ import { IsString, MinLength } from 'class-validator';
 
 export class MerchantLoginDto {
     @IsString()
-    phone: string;
+    email: string;
 
     @IsString()
     @MinLength(8)

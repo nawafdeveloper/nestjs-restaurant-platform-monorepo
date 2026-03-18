@@ -1,51 +1,112 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Button, Card, ConfigProvider, Form, Input, Modal, Space, Switch, Table, Tag, Typography } from 'antd';
+import { Button, ConfigProvider, Empty, Form, Input, Modal, Skeleton, Space, Switch, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useLocale, useTranslations } from 'next-intl';
 import Text from 'antd/es/typography/Text';
 import { PlusOutlined } from '@ant-design/icons';
+import { useBranches, type Branch } from '@/hooks/use-branches';
+import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 
 type BranchRow = {
     key: string;
+    id: string;
     name: string;
+    nameAr: string | null;
     city: string;
     address: string;
-    phone: string;
-    status: 'Active' | 'Inactive';
+    phone: string | null;
+    isActive: boolean;
 };
 
-const initialData: BranchRow[] = [
-    {
-        key: '1',
-        name: 'Al Olaya Branch',
-        city: 'Riyadh',
-        address: 'Olaya Street, Building 12',
-        phone: '512345678',
-        status: 'Active'
-    },
-    {
-        key: '2',
-        name: 'Al Malaz Branch',
-        city: 'Riyadh',
-        address: 'Malaz District, Street 7',
-        phone: '598765432',
-        status: 'Inactive'
-    }
-];
+type LatLng = { lat: number; lng: number };
+
+const DEFAULT_CENTER: LatLng = { lat: 24.7136, lng: 46.6753 }; // الرياض
+
+function mapToRow(branch: Branch): BranchRow {
+    return {
+        key: branch.id,
+        id: branch.id,
+        name: branch.name,
+        nameAr: branch.nameAr,
+        city: branch.city,
+        address: branch.address,
+        phone: branch.phone,
+        isActive: branch.isActive,
+    };
+}
+
+// ========== Map Picker Component ==========
+
+function MapPicker({
+    value,
+    onChange,
+}: {
+    value: LatLng | null;
+    onChange: (val: LatLng) => void;
+}) {
+    return (
+        <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
+            <div className="w-full h-56 overflow-hidden border border-gray-200 mb-2">
+                <Map
+                    defaultCenter={value ?? DEFAULT_CENTER}
+                    defaultZoom={12}
+                    gestureHandling="greedy"
+                    disableDefaultUI
+                    onClick={(e) => {
+                        if (e.detail.latLng) {
+                            onChange({
+                                lat: e.detail.latLng.lat,
+                                lng: e.detail.latLng.lng,
+                            });
+                        }
+                    }}
+                >
+                    {value && <Marker position={value} />}
+                </Map>
+            </div>
+            {value ? (
+                <Typography.Text type="secondary" className="text-xs">
+                    {value.lat.toFixed(6)}, {value.lng.toFixed(6)}
+                </Typography.Text>
+            ) : (
+                <Typography.Text type="secondary" className="text-xs">
+                    اضغط على الخريطة لتحديد الموقع
+                </Typography.Text>
+            )}
+        </APIProvider>
+    );
+}
+
+// ========== Main Component ==========
 
 export default function BranchesTable() {
     const t = useTranslations('Branches');
     const locale = useLocale();
     const direction = locale === 'ar' ? 'rtl' : 'ltr';
-    const [rows, setRows] = useState<BranchRow[]>(initialData);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [selectedBranch, setSelectedBranch] = useState<BranchRow | null>(null);
     const [form] = Form.useForm();
     const [addForm] = Form.useForm();
+
+    // حالة الخريطة لكل modal
+    const [editLatLng, setEditLatLng] = useState<LatLng | null>(null);
+    const [addLatLng, setAddLatLng] = useState<LatLng | null>(null);
+
+    const {
+        contextHolder,
+        fetchLoading,
+        saveLoading,
+        data,
+        handleCreate,
+        handleUpdate,
+        handleDelete: deleteBranch,
+    } = useBranches();
+
+    const rows: BranchRow[] = data.map(mapToRow);
 
     const openDelete = (record: BranchRow) => {
         setSelectedBranch(record);
@@ -56,73 +117,87 @@ export default function BranchesTable() {
         setSelectedBranch(record);
         form.setFieldsValue({
             name: record.name,
+            nameAr: record.nameAr,
             city: record.city,
             address: record.address,
-            phone: record.phone
+            phone: record.phone,
         });
+        // لو عنده lat/lng موجودين نحطهم
+        const original = data.find((b) => b.id === record.id);
+        setEditLatLng(
+            original?.latitude && original?.longitude
+                ? { lat: Number(original.latitude), lng: Number(original.longitude) }
+                : null
+        );
         setIsEditOpen(true);
     };
 
     const closeDelete = () => setIsDeleteOpen(false);
-    const closeEdit = () => setIsEditOpen(false);
-    const closeAdd = () => setIsAddOpen(false);
+    const closeEdit = () => { setIsEditOpen(false); setEditLatLng(null); };
+    const closeAdd = () => { setIsAddOpen(false); setAddLatLng(null); };
 
-    const handleDelete = () => {
-        if (selectedBranch) {
-            setRows((prev) => prev.filter((row) => row.key !== selectedBranch.key));
-        }
-        closeDelete();
+    const handleDelete = async () => {
+        if (!selectedBranch) return;
+        const ok = await deleteBranch(selectedBranch.id);
+        if (ok) closeDelete();
     };
 
-    const handleSave = () => {
-        if (selectedBranch) {
-            const values = form.getFieldsValue();
-            setRows((prev) =>
-                prev.map((row) =>
-                    row.key === selectedBranch.key
-                        ? { ...row, ...values }
-                        : row
-                )
-            );
-        }
-        closeEdit();
+    const handleSave = async () => {
+        if (!selectedBranch) return;
+        const values = form.getFieldsValue();
+        const ok = await handleUpdate(selectedBranch.id, {
+            ...values,
+            latitude: editLatLng ? String(editLatLng.lat) : undefined,
+            longitude: editLatLng ? String(editLatLng.lng) : undefined,
+        });
+        if (ok) closeEdit();
     };
 
     const openAdd = () => {
         addForm.resetFields();
+        setAddLatLng(null);
         setIsAddOpen(true);
     };
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
         const values = addForm.getFieldsValue();
-        const nextKey = String(Date.now());
-        setRows((prev) => [
-            ...prev,
-            {
-                key: nextKey,
-                name: values.name,
-                city: values.city,
-                address: values.address,
-                phone: values.phone,
-                status: 'Active'
-            }
-        ]);
-        closeAdd();
+        const ok = await handleCreate({
+            ...values,
+            latitude: addLatLng ? String(addLatLng.lat) : undefined,
+            longitude: addLatLng ? String(addLatLng.lng) : undefined,
+        });
+        if (ok) closeAdd();
+    };
+
+    const handleToggle = async (record: BranchRow, checked: boolean) => {
+        await handleUpdate(record.id, { isActive: checked } as any);
     };
 
     const headerCellStyle = { backgroundColor: '#F6F9FC' };
+
     const baseColumns: ColumnsType<BranchRow> = [
         { title: t('name'), dataIndex: 'name', key: 'name' },
+        {
+            title: t('nameAr'),
+            dataIndex: 'nameAr',
+            key: 'nameAr',
+            render: (value: string | null) => value ?? '—'
+        },
         { title: t('city'), dataIndex: 'city', key: 'city' },
         { title: t('address'), dataIndex: 'address', key: 'address' },
-        { title: t('phone'), dataIndex: 'phone', key: 'phone' },
+        {
+            title: t('phone'),
+            dataIndex: 'phone',
+            key: 'phone',
+            render: (value: string | null) => value ?? '—'
+        },
         {
             title: t('status'),
-            dataIndex: 'status',
+            dataIndex: 'isActive',
             key: 'status',
-            render: (value: BranchRow['status']) => (
-                <Tag color={value === 'Active' ? 'green' : 'default'}>
-                    {value === 'Active' ? t('active') : t('inactive')}
+            render: (value: boolean) => (
+                <Tag color={value ? 'green' : 'default'}>
+                    {value ? t('active') : t('inactive')}
                 </Tag>
             )
         },
@@ -130,7 +205,11 @@ export default function BranchesTable() {
             title: t('toggle'),
             key: 'toggle',
             render: (_, record) => (
-                <Switch checked={record.status === 'Active'} />
+                <Switch
+                    checked={record.isActive}
+                    loading={saveLoading}
+                    onChange={(checked) => handleToggle(record, checked)}
+                />
             )
         },
         {
@@ -148,13 +227,17 @@ export default function BranchesTable() {
             )
         }
     ];
+
     const columns: ColumnsType<BranchRow> = baseColumns.map((column) => ({
         ...column,
         onHeaderCell: () => ({ style: headerCellStyle })
     }));
 
+    if (fetchLoading) return <Skeleton active paragraph={{ rows: 8 }} />;
+
     return (
         <ConfigProvider direction={direction}>
+            {contextHolder}
             <div dir={direction} className="space-y-4">
                 <div className="flex items-center justify-between">
                     <div>
@@ -177,7 +260,36 @@ export default function BranchesTable() {
                         </div>
                     </Button>
                 </div>
-                <Table className='border! border-gray-200' columns={columns} dataSource={rows} pagination={false} />
+
+                {rows.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center border border-gray-200 rounded-lg py-16">
+                        <Empty
+                            description={
+                                <Typography.Text className="text-gray-400">
+                                    {t('emptyState')}
+                                </Typography.Text>
+                            }
+                        />
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            className="mt-4 h-10! border-0!"
+                            style={{ backgroundColor: '#13B272' }}
+                            onClick={openAdd}
+                        >
+                            {t('addBranch')}
+                        </Button>
+                    </div>
+                ) : (
+                    <Table
+                        className='border! border-gray-200'
+                        columns={columns}
+                        dataSource={rows}
+                        pagination={false}
+                    />
+                )}
+
+                {/* Delete Modal */}
                 <Modal
                     title={t('deleteTitle')}
                     open={isDeleteOpen}
@@ -185,17 +297,18 @@ export default function BranchesTable() {
                     onOk={handleDelete}
                     okText={t('deleteOk')}
                     cancelText={t('deleteCancel')}
-                    okButtonProps={{
-                        className: 'bg-[#ff4d4f]! h-10! border-0!'
-                    }}
-                    cancelButtonProps={{
-                        className: 'h-10! bg-[#D9E5F1]! border-0!'
-                    }}
+                    confirmLoading={saveLoading}
+                    okButtonProps={{ className: 'bg-[#ff4d4f]! h-10! border-0!' }}
+                    cancelButtonProps={{ className: 'h-10! bg-[#D9E5F1]! border-0!', disabled: saveLoading }}
                 >
                     <Typography.Text>
-                        {selectedBranch ? t('deleteConfirmWithName', { name: selectedBranch.name }) : t('deleteConfirm')}
+                        {selectedBranch
+                            ? t('deleteConfirmWithName', { name: selectedBranch.name })
+                            : t('deleteConfirm')}
                     </Typography.Text>
                 </Modal>
+
+                {/* Edit Modal */}
                 <Modal
                     title={t('editBranch')}
                     open={isEditOpen}
@@ -203,15 +316,16 @@ export default function BranchesTable() {
                     onOk={handleSave}
                     okText={t('save')}
                     cancelText={t('cancel')}
-                    okButtonProps={{
-                        className: 'bg-[#119F65]! h-10! border-0!'
-                    }}
-                    cancelButtonProps={{
-                        className: 'h-10! bg-[#D9E5F1]! border-0!'
-                    }}
+                    confirmLoading={saveLoading}
+                    okButtonProps={{ className: 'bg-[#119F65]! h-10! border-0!' }}
+                    cancelButtonProps={{ className: 'h-10! bg-[#D9E5F1]! border-0!', disabled: saveLoading }}
                 >
+                    <MapPicker value={editLatLng} onChange={setEditLatLng} />
                     <Form layout="vertical" form={form}>
                         <Form.Item label={t('name')} name="name">
+                            <Input className="h-10" />
+                        </Form.Item>
+                        <Form.Item label={t('nameAr')} name="nameAr">
                             <Input className="h-10" />
                         </Form.Item>
                         <Form.Item label={t('city')} name="city">
@@ -225,6 +339,8 @@ export default function BranchesTable() {
                         </Form.Item>
                     </Form>
                 </Modal>
+
+                {/* Add Modal */}
                 <Modal
                     title={t('addBranch')}
                     open={isAddOpen}
@@ -232,15 +348,16 @@ export default function BranchesTable() {
                     onOk={handleAdd}
                     okText={t('save')}
                     cancelText={t('cancel')}
-                    okButtonProps={{
-                        className: 'bg-[#119F65]! h-10! border-0!'
-                    }}
-                    cancelButtonProps={{
-                        className: 'h-10! bg-[#D9E5F1]! border-0!'
-                    }}
+                    confirmLoading={saveLoading}
+                    okButtonProps={{ className: 'bg-[#119F65]! h-10! border-0!' }}
+                    cancelButtonProps={{ className: 'h-10! bg-[#D9E5F1]! border-0!', disabled: saveLoading }}
                 >
+                    <MapPicker value={addLatLng} onChange={setAddLatLng} />
                     <Form layout="vertical" form={addForm}>
                         <Form.Item label={t('name')} name="name" rules={[{ required: true }]}>
+                            <Input className="h-10" />
+                        </Form.Item>
+                        <Form.Item label={t('nameAr')} name="nameAr">
                             <Input className="h-10" />
                         </Form.Item>
                         <Form.Item label={t('city')} name="city">

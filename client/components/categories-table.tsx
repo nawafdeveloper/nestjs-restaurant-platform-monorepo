@@ -1,51 +1,59 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Button, Card, ConfigProvider, Form, Input, Modal, Space, Switch, Table, Tag, Typography, Upload } from 'antd';
+import { Button, ConfigProvider, Empty, Form, Input, Modal, Skeleton, Space, Switch, Table, Tag, Typography, Upload } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { useLocale, useTranslations } from 'next-intl';
 import Text from 'antd/es/typography/Text';
+import { useCategories } from '@/hooks/use-categories';
+import type { Category } from '@/types';
 
 type CategoryRow = {
     key: string;
+    id: string;
     name: string;
-    nameAr: string;
+    nameAr: string | null;
     sortOrder: number;
-    imageUrl: string;
-    status: 'Active' | 'Inactive';
+    imageUrl: string | null;
+    isActive: boolean;
 };
 
-const initialData: CategoryRow[] = [
-    {
-        key: '1',
-        name: 'Shawarma',
-        nameAr: 'شاورما',
-        sortOrder: 1,
-        imageUrl: 'https://placehold.co/80x80',
-        status: 'Active'
-    },
-    {
-        key: '2',
-        name: 'Burgers',
-        nameAr: 'برجر',
-        sortOrder: 2,
-        imageUrl: 'https://placehold.co/80x80',
-        status: 'Inactive'
-    }
-];
+function mapToRow(category: Category): CategoryRow {
+    return {
+        key: category.id,
+        id: category.id,
+        name: category.name,
+        nameAr: category.nameAr,
+        sortOrder: category.sortOrder,
+        imageUrl: category.imageUrl,
+        isActive: category.isActive,
+    };
+}
 
 export default function CategoriesTable() {
     const t = useTranslations('Categories');
     const locale = useLocale();
     const direction = locale === 'ar' ? 'rtl' : 'ltr';
-    const [rows, setRows] = useState<CategoryRow[]>(initialData);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<CategoryRow | null>(null);
     const [form] = Form.useForm();
     const [addForm] = Form.useForm();
+
+    const {
+        contextHolder,
+        fetchLoading,
+        saveLoading,
+        data,
+        handleCreate,
+        handleUpdate,
+        handleDelete: deleteCategory,
+        handleToggle,
+    } = useCategories();
+
+    const rows: CategoryRow[] = data.map(mapToRow);
 
     const openDelete = (record: CategoryRow) => {
         setSelectedCategory(record);
@@ -57,7 +65,8 @@ export default function CategoriesTable() {
         form.setFieldsValue({
             name: record.name,
             nameAr: record.nameAr,
-            sortOrder: record.sortOrder
+            sortOrder: record.sortOrder,
+            imageFile: [],
         });
         setIsEditOpen(true);
     };
@@ -66,25 +75,21 @@ export default function CategoriesTable() {
     const closeEdit = () => setIsEditOpen(false);
     const closeAdd = () => setIsAddOpen(false);
 
-    const handleDelete = () => {
-        if (selectedCategory) {
-            setRows((prev) => prev.filter((row) => row.key !== selectedCategory.key));
-        }
-        closeDelete();
+    const handleDelete = async () => {
+        if (!selectedCategory) return;
+        const ok = await deleteCategory(selectedCategory.id);
+        if (ok) closeDelete();
     };
 
-    const handleSave = () => {
-        if (selectedCategory) {
-            const values = form.getFieldsValue();
-            setRows((prev) =>
-                prev.map((row) =>
-                    row.key === selectedCategory.key
-                        ? { ...row, ...values }
-                        : row
-                )
-            );
-        }
-        closeEdit();
+    const handleSave = async () => {
+        if (!selectedCategory) return;
+        const values = form.getFieldsValue();
+        const ok = await handleUpdate(selectedCategory.id, {
+            name: values.name,
+            nameAr: values.nameAr,
+            sortOrder: values.sortOrder ? Number(values.sortOrder) : undefined,
+        });
+        if (ok) closeEdit();
     };
 
     const openAdd = () => {
@@ -92,35 +97,43 @@ export default function CategoriesTable() {
         setIsAddOpen(true);
     };
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
         const values = addForm.getFieldsValue();
-        const nextKey = String(Date.now());
-        setRows((prev) => [
-            ...prev,
-            {
-                key: nextKey,
-                name: values.name,
-                nameAr: values.nameAr,
-                sortOrder: values.sortOrder || 0,
-                imageUrl: 'https://placehold.co/80x80',
-                status: 'Active'
-            }
-        ]);
-        closeAdd();
+        const ok = await handleCreate({
+            name: values.name,
+            nameAr: values.nameAr,
+            sortOrder: values.sortOrder ? Number(values.sortOrder) : undefined,
+        });
+        if (ok) closeAdd();
     };
 
     const headerCellStyle = { backgroundColor: '#F6F9FC' };
+
     const baseColumns: ColumnsType<CategoryRow> = [
+        {
+            title: t('image'),
+            dataIndex: 'imageUrl',
+            key: 'imageUrl',
+            render: (value: string | null) =>
+                value
+                    ? <img src={value} alt="" className="w-10 h-10 rounded object-cover" />
+                    : '—'
+        },
         { title: t('name'), dataIndex: 'name', key: 'name' },
-        { title: t('nameAr'), dataIndex: 'nameAr', key: 'nameAr' },
+        {
+            title: t('nameAr'),
+            dataIndex: 'nameAr',
+            key: 'nameAr',
+            render: (value: string | null) => value ?? '—'
+        },
         { title: t('sortOrder'), dataIndex: 'sortOrder', key: 'sortOrder' },
         {
             title: t('status'),
-            dataIndex: 'status',
+            dataIndex: 'isActive',
             key: 'status',
-            render: (value: CategoryRow['status']) => (
-                <Tag color={value === 'Active' ? 'green' : 'default'}>
-                    {value === 'Active' ? t('active') : t('inactive')}
+            render: (value: boolean) => (
+                <Tag color={value ? 'green' : 'default'}>
+                    {value ? t('active') : t('inactive')}
                 </Tag>
             )
         },
@@ -128,7 +141,11 @@ export default function CategoriesTable() {
             title: t('toggle'),
             key: 'toggle',
             render: (_, record) => (
-                <Switch checked={record.status === 'Active'} />
+                <Switch
+                    checked={record.isActive}
+                    loading={saveLoading}
+                    onChange={(checked) => handleToggle(record.id, checked)}
+                />
             )
         },
         {
@@ -146,13 +163,17 @@ export default function CategoriesTable() {
             )
         }
     ];
+
     const columns: ColumnsType<CategoryRow> = baseColumns.map((column) => ({
         ...column,
         onHeaderCell: () => ({ style: headerCellStyle })
     }));
 
+    if (fetchLoading) return <Skeleton active paragraph={{ rows: 8 }} />;
+
     return (
         <ConfigProvider direction={direction}>
+            {contextHolder}
             <div dir={direction} className="space-y-4">
                 <div className="flex items-center justify-between">
                     <div>
@@ -175,7 +196,36 @@ export default function CategoriesTable() {
                         </div>
                     </Button>
                 </div>
-                <Table columns={columns} dataSource={rows} pagination={false} />
+
+                {rows.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center border border-gray-200 rounded-lg py-16">
+                        <Empty
+                            description={
+                                <Typography.Text className="text-gray-400">
+                                    {t('emptyState')}
+                                </Typography.Text>
+                            }
+                        />
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            className="mt-4 h-10! border-0!"
+                            style={{ backgroundColor: '#13B272' }}
+                            onClick={openAdd}
+                        >
+                            {t('addCategory')}
+                        </Button>
+                    </div>
+                ) : (
+                    <Table
+                        className='border! border-gray-200'
+                        columns={columns}
+                        dataSource={rows}
+                        pagination={false}
+                    />
+                )}
+
+                {/* Delete Modal */}
                 <Modal
                     title={t('deleteTitle')}
                     open={isDeleteOpen}
@@ -183,18 +233,18 @@ export default function CategoriesTable() {
                     onOk={handleDelete}
                     okText={t('deleteOk')}
                     cancelText={t('deleteCancel')}
-                    okButtonProps={{
-                        className: 'bg-[#ff4d4f]! h-10! border-0!'
-                    }}
-                    cancelButtonProps={{
-                        className: 'h-10! bg-[#D9E5F1]! border-0!'
-                    }}
+                    confirmLoading={saveLoading}
+                    okButtonProps={{ className: 'bg-[#ff4d4f]! h-10! border-0!' }}
+                    cancelButtonProps={{ className: 'h-10! bg-[#D9E5F1]! border-0!', disabled: saveLoading }}
                 >
                     <Typography.Text>
-                        {selectedCategory ? t('deleteConfirmWithName', { name: selectedCategory.name }) : t('deleteConfirm')}
+                        {selectedCategory
+                            ? t('deleteConfirmWithName', { name: selectedCategory.name })
+                            : t('deleteConfirm')}
                     </Typography.Text>
                 </Modal>
 
+                {/* Edit Modal */}
                 <Modal
                     title={t('editCategory')}
                     open={isEditOpen}
@@ -202,12 +252,9 @@ export default function CategoriesTable() {
                     onOk={handleSave}
                     okText={t('save')}
                     cancelText={t('cancel')}
-                    okButtonProps={{
-                        className: 'bg-[#119F65]! h-10! border-0!'
-                    }}
-                    cancelButtonProps={{
-                        className: 'h-10! bg-[#D9E5F1]! border-0!'
-                    }}
+                    confirmLoading={saveLoading}
+                    okButtonProps={{ className: 'bg-[#119F65]! h-10! border-0!' }}
+                    cancelButtonProps={{ className: 'h-10! bg-[#D9E5F1]! border-0!', disabled: saveLoading }}
                 >
                     <Form layout="vertical" form={form}>
                         <Form.Item label={t('name')} name="name">
@@ -219,7 +266,10 @@ export default function CategoriesTable() {
                         <Form.Item label={t('sortOrder')} name="sortOrder">
                             <Input className="h-10" type="number" />
                         </Form.Item>
-                        <Form.Item label={t('image')} name="imageFile" valuePropName="fileList"
+                        <Form.Item
+                            label={t('image')}
+                            name="imageFile"
+                            valuePropName="fileList"
                             getValueFromEvent={(e) => (Array.isArray(e?.fileList) ? e.fileList : [])}
                         >
                             <Upload beforeUpload={() => false} maxCount={1} showUploadList>
@@ -229,6 +279,7 @@ export default function CategoriesTable() {
                     </Form>
                 </Modal>
 
+                {/* Add Modal */}
                 <Modal
                     title={t('addCategory')}
                     open={isAddOpen}
@@ -236,12 +287,9 @@ export default function CategoriesTable() {
                     onOk={handleAdd}
                     okText={t('save')}
                     cancelText={t('cancel')}
-                    okButtonProps={{
-                        className: 'bg-[#119F65]! h-10! border-0!'
-                    }}
-                    cancelButtonProps={{
-                        className: 'h-10! bg-[#D9E5F1]! border-0!'
-                    }}
+                    confirmLoading={saveLoading}
+                    okButtonProps={{ className: 'bg-[#119F65]! h-10! border-0!' }}
+                    cancelButtonProps={{ className: 'h-10! bg-[#D9E5F1]! border-0!', disabled: saveLoading }}
                 >
                     <Form layout="vertical" form={addForm}>
                         <Form.Item label={t('name')} name="name" rules={[{ required: true }]}>
@@ -253,7 +301,10 @@ export default function CategoriesTable() {
                         <Form.Item label={t('sortOrder')} name="sortOrder">
                             <Input className="h-10" type="number" />
                         </Form.Item>
-                        <Form.Item label={t('image')} name="imageFile" valuePropName="fileList"
+                        <Form.Item
+                            label={t('image')}
+                            name="imageFile"
+                            valuePropName="fileList"
                             getValueFromEvent={(e) => (Array.isArray(e?.fileList) ? e.fileList : [])}
                         >
                             <Upload beforeUpload={() => false} maxCount={1} showUploadList>

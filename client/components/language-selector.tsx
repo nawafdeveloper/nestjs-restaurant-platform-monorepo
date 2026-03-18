@@ -45,6 +45,7 @@ export default function LanguageSelector({ variant = 'floating', className }: La
                 aria-label={t('label')}
                 disabled={isPending}
                 size="middle"
+                className='h-10!'
             />
         </div>
     );

@@ -1,5 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default async function MainPage() {
-  return (
-    <div>MainPage</div>
-  )
+  return redirect('/auth/login');
 }

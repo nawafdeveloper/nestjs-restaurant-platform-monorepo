@@ -7,8 +7,14 @@
         "forgetPass": "نسيت كلمة المرور؟",
         "resetPass": "إعادة تعيين كلمة المرور الآن",
         "loginButton": "تسجيل الدخول الآن",
+        "loginButtonLoading": "جاري تسجيل الدخول...",
         "dontHaveAccount": "ليس لديك حساب بعد؟",
-        "signupNow": "إنشاء حساب"
+        "signupNow": "إنشاء حساب",
+        "loginErrorTitle": "فشل تسجيل الدخول",
+        "loginErrorDescription": "حدث خطأ ما، يرجى المحاولة مرة أخرى",
+        "loginSuccessTitle": "أهلاً بعودتك",
+        "loginSuccessDescription": "تم تسجيل دخولك بنجاح",
+        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة"
     },
     "SignupForm": {
         "title": "إنشاء حسابك",
@@ -20,7 +26,13 @@
         "phoneHint": "رقم سعودي فقط، 9 أرقام",
         "signupButton": "إنشاء حساب",
         "alreadyHaveAccount": "لديك حساب بالفعل؟",
-        "loginNow": "تسجيل الدخول الآن"
+        "loginNow": "تسجيل الدخول الآن",
+        "signupErrorTitle": "فشل إنشاء الحساب",
+        "signupErrorDescription": "حدث خطأ ما، يرجى المحاولة مرة أخرى",
+        "signupSuccessTitle": "تم إنشاء الحساب",
+        "signupSuccessDescription": "تم إنشاء حسابك بنجاح",
+        "emailTaken": "هذا البريد الإلكتروني مسجل مسبقاً",
+        "signupButtonLoading": "جاري التسجيل..."
     },
     "AuthHero": {
         "title": "كل ما تحتاجه لإدارة أعمالك في برنامج واحد!",
@@ -71,6 +83,11 @@
         "settings": "الإعدادات",
         "accountSecurity": "الحساب والأمان"
     },
+    "AppHeader": {
+        "accountSecurity": "الحساب والأمان",
+        "signout": "تسجيل الخروج",
+        "signoutLoading": "تسجيل الخروج..."
+    },
     "Onboarding": {
         "stepStoreInfo": "معلومات المتجر الأساسية",
         "stepFirstBranch": "الفرع الأول",
@@ -102,7 +119,18 @@
         "typeShawarma": "شاورما",
         "typeBurger": "برجر",
         "typePizza": "بيتزا",
-        "typeCafe": "مقهى"
+        "typeCafe": "مقهى",
+        "storeNameAr": "اسم المتجر بالعربي",
+        "storeNameEn": "اسم المتجر بالإنجليزي",
+        "slug": "معرف المتجر (مثال: my-store)",
+        "descriptionAr": "وصف المتجر بالعربي",
+        "descriptionEn": "وصف المتجر بالإنجليزي",
+        "creatingStoreLoading": "جاري تجهيز متجرك...",
+        "slugTaken": "معرف المتجر مستخدم مسبقاً",
+        "onboardingError": "حدث خطأ ما، يرجى المحاولة مرة أخرى",
+        "errorTitle": "خطأ",
+        "branchLocation": "موقع الفرع",
+        "locationDenied": "تم رفض الوصول للموقع. اضغط على الخريطة لتحديد موقع الفرع يدوياً."
     },
     "Overview": {
         "statsTotalOrders": "إجمالي الطلبات",
@@ -143,7 +171,13 @@
         "active": "نشط",
         "inactive": "غير نشط",
         "cancel": "إلغاء",
-        "save": "حفظ التغييرات"
+        "save": "حفظ التغييرات",
+        "errorTitle": "خطأ",
+        "fetchError": "فشل تحميل بيانات المتجر",
+        "saveError": "فشل حفظ التغييرات",
+        "saveSuccess": "تم تحديث المتجر بنجاح",
+        "successTitle": "تم",
+        "slugTaken": "معرف المتجر مستخدم مسبقاً"
     },
     "Branches": {
         "title": "الفروع",
@@ -167,7 +201,15 @@
         "deleteCancel": "إلغاء",
         "editBranch": "تعديل الفرع",
         "save": "حفظ",
-        "cancel": "إلغاء"
+        "cancel": "إلغاء",
+        "nameAr": "اسم الفرع (عربي)",
+        "successTitle": "تمت العملية بنجاح",
+        "createSuccess": "تم إضافة الفرع بنجاح",
+        "errorTitle": "حدث خطأ",
+        "fetchError": "فشل تحميل الفروع، يرجى المحاولة مجدداً",
+        "updateSuccess": "تم تحديث الفرع بنجاح",
+        "deleteSuccess": "تم حذف الفرع بنجاح",
+        "deleteError": "فشل حذف الفرع، يرجى المحاولة مجدداً"
     },
     "WorkingHours": {
         "title": "أوقات العمل",
@@ -185,7 +227,13 @@
             "thursday": "الخميس",
             "friday": "الجمعة",
             "saturday": "السبت"
-        }
+        },
+        "errorTitle": "حدث خطأ",
+        "fetchError": "فشل تحميل ساعات العمل، يرجى المحاولة مجدداً",
+        "saveError": "فشل حفظ ساعات العمل، يرجى المحاولة مجدداً",
+        "successTitle": "تمت العملية بنجاح",
+        "saveSuccess": "تم حفظ ساعات العمل بنجاح",
+        "save": "حفظ"
     },
     "StoreTheme": {
         "title": "مظهر المتجر",
@@ -199,7 +247,12 @@
         "layoutCentered": "متمركز",
         "layoutGrid": "تركيز على الشبكة",
         "cancel": "إلغاء",
-        "save": "حفظ التغييرات"
+        "save": "حفظ التغييرات",
+        "errorTitle": "حدث خطأ",
+        "fetchError": "فشل تحميل إعدادات المظهر، يرجى المحاولة مجدداً",
+        "saveError": "فشل حفظ إعدادات المظهر، يرجى المحاولة مجدداً",
+        "successTitle": "تمت العملية بنجاح",
+        "saveSuccess": "تم حفظ إعدادات المظهر بنجاح"
     },
     "Categories": {
         "title": "التصنيفات",
@@ -225,7 +278,17 @@
         "deleteCancel": "إلغاء",
         "editCategory": "تعديل التصنيف",
         "save": "حفظ",
-        "cancel": "إلغاء"
+        "cancel": "إلغاء",
+        "errorTitle": "حدث خطأ",
+        "fetchError": "فشل تحميل الفئات، يرجى المحاولة مجدداً",
+        "createError": "فشل إضافة الفئة، يرجى المحاولة مجدداً",
+        "updateError": "فشل تحديث الفئة، يرجى المحاولة مجدداً",
+        "deleteError": "فشل حذف الفئة، يرجى المحاولة مجدداً",
+        "successTitle": "تمت العملية بنجاح",
+        "createSuccess": "تم إضافة الفئة بنجاح",
+        "updateSuccess": "تم تحديث الفئة بنجاح",
+        "deleteSuccess": "تم حذف الفئة بنجاح",
+        "emptyState": "لا توجد فئات بعد"
     },
     "Products": {
         "title": "المنتجات",
@@ -257,7 +320,19 @@
         "deleteCancel": "إلغاء",
         "editProduct": "تعديل المنتج",
         "save": "حفظ",
-        "cancel": "إلغاء"
+        "cancel": "إلغاء",
+        "errorTitle": "حدث خطأ",
+        "fetchError": "فشل تحميل المنتجات، يرجى المحاولة مجدداً",
+        "createError": "فشل إضافة المنتج، يرجى المحاولة مجدداً",
+        "updateError": "فشل تحديث المنتج، يرجى المحاولة مجدداً",
+        "deleteError": "فشل حذف المنتج، يرجى المحاولة مجدداً",
+        "successTitle": "تمت العملية بنجاح",
+        "createSuccess": "تم إضافة المنتج بنجاح",
+        "updateSuccess": "تم تحديث المنتج بنجاح",
+        "deleteSuccess": "تم حذف المنتج بنجاح",
+        "emptyState": "لا توجد منتجات بعد",
+        "toggleActive": "تفعيل",
+        "toggleAvailable": "متاح"
     },
     "Variants": {
         "title": "المتغيرات",
@@ -476,6 +551,20 @@
         "modalCancel": "إلغاء",
         "useMyLocation": "استخدم موقعي",
         "selectLocation": "اختيار الموقع",
+        "selectBranch": "اختيار الفرع",
+        "saveChanges": "حفظ التغييرات",
+        "drawerTitle": "قائمة المتجر",
+        "sidebarMenu": {
+            "home": "الرئيسية",
+            "menu": "القائمة",
+            "categories": "التصنيفات",
+            "about": "عن المتجر",
+            "contact": "تواصل معنا"
+        },
+        "loginButton": "تسجيل الدخول",
+        "statusOpen": "مفتوح",
+        "showMyLocation": "عرض موقعي",
+        "selectYourLocation": "اختر موقعك",
         "tabs": {
             "delivery": "توصيل",
             "pickup": "استلام"
@@ -508,5 +597,65 @@
             "totalPrice": "SAR 48.5",
             "checkout": "إتمام الطلب"
         }
+    },
+    "FoodMenu": {
+        "menuTitle": "قائمتنا",
+        "options": "إضافات",
+        "quantity": "الكمية",
+        "total": "الإجمالي",
+        "addToCart": "أضف إلى السلة",
+        "itemAdded": "{name} أُضيفت إلى السلة بسحر!",
+        "magicHint": "كل إضافة تأتي مع لمسة من السحر ✨",
+        "required": "إلزامي",
+        "currency": "ر.س",
+        "close": "إغلاق",
+        "addToCartAria": "أضف {name}",
+        "decreaseQuantityAria": "تقليل الكمية",
+        "increaseQuantityAria": "زيادة الكمية"
+    },
+    "CartModal": {
+        "cartTitle": "السلة",
+        "items": "عناصر",
+        "subtotal": "الإجمالي الفرعي",
+        "total": "الإجمالي",
+        "checkout": "إتمام الطلب",
+        "removeItem": "حذف العنصر",
+        "chickenShawarma": "شاورما دجاج",
+        "large": "كبير",
+        "friesCombo": "بطاطس كومبو",
+        "regular": "عادي",
+        "emptyCart": "عربة التسوق فارغة"
+    },
+    "Checkout": {
+        "title": "الدفع",
+        "back": "رجوع",
+        "items": "منتجات",
+        "orderSummary": "ملخص الطلب",
+        "deliveryDetails": "تفاصيل التوصيل",
+        "pickupDetails": "تفاصيل الاستلام",
+        "deliveryAddress": "عنوان التوصيل",
+        "branch": "الفرع",
+        "noLocationSelected": "لم يتم تحديد الموقع",
+        "noBranchSelected": "لم يتم اختيار فرع",
+        "orderNotes": "ملاحظات الطلب",
+        "notesPlaceholder": "أي طلبات خاصة؟ (اختياري)",
+        "paymentMethod": "طريقة الدفع",
+        "paymentCash": "الدفع عند الاستلام",
+        "paymentCashDesc": "ادفع عند استلام طلبك",
+        "paymentCard": "بطاقة ائتمانية / مدى",
+        "paymentCardDesc": "فيزا، ماستركارد، مدى",
+        "paymentApplePay": "Apple Pay",
+        "paymentApplePayDesc": "ادفع بـ Face ID أو Touch ID",
+        "promoCode": "كود الخصم",
+        "promoPlaceholder": "أدخل الكود",
+        "apply": "تطبيق",
+        "applied": "تم التطبيق ✓",
+        "promoSaved": "وفّرت SAR {amount}",
+        "subtotal": "المجموع الجزئي",
+        "deliveryFee": "رسوم التوصيل",
+        "free": "مجاني",
+        "discount": "الخصم",
+        "total": "الإجمالي",
+        "placeOrder": "تأكيد الطلب"
     }
 }
